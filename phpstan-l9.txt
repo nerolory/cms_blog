@@ -1,0 +1,559 @@
+﻿docker : Note: Using configuration file /var/www/html/phpstan.neon.
+C:\Temp\ps-script-c0b4b940-cadb-4952-b9dd-5d89c45c25bd.ps1:77 знак:1
++ docker compose exec -T php composer analyse 2>&1 | Out-File -FilePath ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Note: Using con...l/phpstan.neon.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ ------ ------------------------------ 
+  Line   app/DTO/MailSettingsData.php  
+ ------ ------------------------------ 
+  27     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  32     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  33     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  34     Cannot cast mixed to int.     
+         ЁЯкк  cast.int                  
+  35     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  36     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  37     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  38     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  39     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+ ------ ------------------------------ 
+
+ ------ ------------------------------ 
+  Line   app/DTO/PostData.php          
+ ------ ------------------------------ 
+  111    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  113    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  114    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  115    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  116    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  117    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  119    Cannot cast mixed to int.     
+         ЁЯкк  cast.int                  
+  142    Cannot cast mixed to int.     
+         ЁЯкк  cast.int                  
+  146    Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+ ------ ------------------------------ 
+
+ ------ -------------------------------------------------------------------- 
+  Line   app/Filament/Resources/Posts/Schemas/PostForm.php                   
+ ------ -------------------------------------------------------------------- 
+  106    Method                                                              
+         App\Filament\Resources\Posts\Schemas\PostForm::permissionOptions()  
+         should return array<int, string> but returns array<mixed>.          
+         ЁЯкк  return.type                                                     
+ ------ -------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   app/Http/Controllers/Auth/ForgotPasswordController.php               
+ ------ --------------------------------------------------------------------- 
+  25     Parameter #1 $email of method                                        
+         App\Services\Contracts\UserServiceContract::sendPasswordResetLink()  
+         expects string, mixed given.                                         
+         ЁЯкк  argument.type                                                    
+ ------ --------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------- 
+  Line   app/Http/Controllers/Auth/LoginController.php                       
+ ------ -------------------------------------------------------------------- 
+  26     Parameter #1 $email of method                                       
+         App\Services\Contracts\UserServiceContract::authenticate() expects  
+         string, mixed given.                                                
+         ЁЯкк  argument.type                                                   
+  27     Parameter #2 $password of method                                    
+         App\Services\Contracts\UserServiceContract::authenticate() expects  
+         string, mixed given.                                                
+         ЁЯкк  argument.type                                                   
+ ------ -------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Http/Requests/Api/StorePostRequest.php                             
+ ------ ----------------------------------------------------------------------- 
+  33     Parameter $title of static method App\DTO\PostData::fromValidated()    
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  34     Parameter $slug of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  35     Parameter $excerpt of static method App\DTO\PostData::fromValidated()  
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  36     Parameter $body of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Http/Requests/Api/UpdatePostRequest.php                            
+ ------ ----------------------------------------------------------------------- 
+  49     Parameter $title of static method App\DTO\PostData::fromValidated()    
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  50     Parameter $slug of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  51     Parameter $excerpt of static method App\DTO\PostData::fromValidated()  
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  52     Parameter $body of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------- 
+  Line   app/Http/Requests/Auth/RegisterRequest.php                          
+ ------ -------------------------------------------------------------------- 
+  45     Parameter $name of static method                                    
+         App\DTO\RegisterData::fromValidated() expects string, mixed given.  
+         ЁЯкк  argument.type                                                   
+  46     Parameter $email of static method                                   
+         App\DTO\RegisterData::fromValidated() expects string, mixed given.  
+         ЁЯкк  argument.type                                                   
+  47     Parameter $password of static method                                
+         App\DTO\RegisterData::fromValidated() expects string, mixed given.  
+         ЁЯкк  argument.type                                                   
+ ------ -------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------- 
+  Line   app/Http/Requests/Auth/ResetPasswordRequest.php                     
+ ------ -------------------------------------------------------------------- 
+  31     Method App\Http\Requests\Auth\ResetPasswordRequest::credentials()   
+         should return array{email: string, password: string,                
+         password_confirmation: string, token: string} but returns           
+         array{email: mixed, password: mixed, password_confirmation: mixed,  
+         token: mixed}.                                                      
+         ЁЯкк  return.type                                                     
+         ЁЯТб  Offset 'email' (string) does not accept type mixed.             
+         ЁЯТб  Offset 'password' (string) does not accept type mixed.          
+         ЁЯТб  Offset 'password_confirmation' (string) does not accept type    
+         mixed.                                                              
+         ЁЯТб  Offset 'token' (string) does not accept type mixed.             
+ ------ -------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Http/Requests/Profile/UpdateProfileRequest.php                     
+ ------ ----------------------------------------------------------------------- 
+  52     Parameter $name of static method App\DTO\ProfileData::fromValidated()  
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  53     Parameter $email of static method                                      
+         App\DTO\ProfileData::fromValidated() expects string, mixed given.      
+         ЁЯкк  argument.type                                                      
+  54     Parameter $password of static method                                   
+         App\DTO\ProfileData::fromValidated() expects string|null, mixed        
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  55     Parameter $theme of static method                                      
+         App\DTO\ProfileData::fromValidated() expects string, mixed given.      
+         ЁЯкк  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Http/Requests/StorePostRequest.php                                 
+ ------ ----------------------------------------------------------------------- 
+  53     Parameter $title of static method App\DTO\PostData::fromValidated()    
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  54     Parameter $slug of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  55     Parameter $excerpt of static method App\DTO\PostData::fromValidated()  
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  56     Parameter $body of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  58     Parameter $userId of static method App\DTO\PostData::fromValidated()   
+         expects int|null, mixed given.                                         
+         ЁЯкк  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Http/Requests/UpdatePostRequest.php                                
+ ------ ----------------------------------------------------------------------- 
+  66     Parameter $title of static method App\DTO\PostData::fromValidated()    
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  67     Parameter $slug of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  68     Parameter $excerpt of static method App\DTO\PostData::fromValidated()  
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  69     Parameter $body of static method App\DTO\PostData::fromValidated()     
+         expects string, mixed given.                                           
+         ЁЯкк  argument.type                                                      
+  71     Parameter $userId of static method App\DTO\PostData::fromValidated()   
+         expects int|null, mixed given.                                         
+         ЁЯкк  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Repositories/MailSettingsRepository.php                            
+ ------ ----------------------------------------------------------------------- 
+  55     Cannot access offset 'mode' on mixed.                                  
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  55     Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  56     Cannot access offset 'preset' on mixed.                                
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  56     Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  57     Cannot access offset 'host' on mixed.                                  
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  57     Parameter $host of class App\DTO\MailSettingsData constructor expects  
+         string|null, mixed given.                                              
+         ЁЯкк  argument.type                                                      
+  58     Parameter #1 $defaults of method                                       
+         App\Repositories\MailSettingsRepository::readPort() expects array<str  
+         ing, mixed>, mixed given.                                              
+         ЁЯкк  argument.type                                                      
+  59     Cannot access offset 'scheme' on mixed.                                
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  59     Parameter $scheme of class App\DTO\MailSettingsData constructor        
+         expects string|null, mixed given.                                      
+         ЁЯкк  argument.type                                                      
+  60     Cannot access offset 'username' on mixed.                              
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  60     Parameter $username of class App\DTO\MailSettingsData constructor      
+         expects string|null, mixed given.                                      
+         ЁЯкк  argument.type                                                      
+  61     Cannot access offset 'password' on mixed.                              
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  61     Parameter $password of class App\DTO\MailSettingsData constructor      
+         expects string|null, mixed given.                                      
+         ЁЯкк  argument.type                                                      
+  62     Cannot access offset 'from_address' on mixed.                          
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  62     Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  63     Cannot access offset 'from_name' on mixed.                             
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  63     Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  94     Parameter #2 $haystack of function in_array expects array, mixed       
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  110    Cannot cast mixed to int.                                              
+         ЁЯкк  cast.int                                                           
+ ------ ----------------------------------------------------------------------- 
+
+ ------ -------------------------------------- 
+  Line   app/Repositories/PostRepository.php   
+ ------ -------------------------------------- 
+  163    Cannot access property $id on mixed.  
+         ЁЯкк  property.nonObject                
+ ------ -------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Services/MailSettingsService.php                                   
+ ------ ----------------------------------------------------------------------- 
+  24     Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  60     Binary operation "." between 'Mail ping from ' and mixed results in    
+         an error.                                                              
+         ЁЯкк  binaryOp.invalid                                                   
+  74     Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  101    Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  112    Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  122    Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  123    Cannot cast mixed to int.                                              
+         ЁЯкк  cast.int                                                           
+  124    Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  125    Parameter $username of class App\DTO\ResolvedMailerConfig constructor  
+         expects string|null, mixed given.                                      
+         ЁЯкк  argument.type                                                      
+  126    Parameter $password of class App\DTO\ResolvedMailerConfig constructor  
+         expects string|null, mixed given.                                      
+         ЁЯкк  argument.type                                                      
+  128    Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+  134    Cannot cast mixed to string.                                           
+         ЁЯкк  cast.string                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Services/UserService.php                                           
+ ------ ----------------------------------------------------------------------- 
+  105    Method App\Services\UserService::resetPassword() should return string  
+         but returns mixed.                                                     
+         ЁЯкк  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   database/migrations/2026_06_13_193143_create_permission_tables.php     
+ ------ ----------------------------------------------------------------------- 
+  17     Cannot access offset 'role_pivot_key' on mixed.                        
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  18     Cannot access offset 'permission_pivot_key' on mixed.                  
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  21     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  26     Cannot access offset 'permissions' on mixed.                           
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  26     Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::create() expects string, mixed      
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  38     Cannot access offset 'roles' on mixed.                                 
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  38     Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::create() expects string, mixed      
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  41     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  41     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  42     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  42     Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::index() expects array|string,    
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  48     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  54     Cannot access offset 'model_has_permissions' on mixed.                 
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  54     Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::create() expects string, mixed      
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  55     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  58     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  58     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  59     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  61     Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::foreign() expects array|string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  63     Cannot access offset 'permissions' on mixed.                           
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  63     Parameter #1 $table of method                                          
+         Illuminate\Database\Schema\ForeignKeyDefinition::on() expects string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  66     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  66     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  67     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  67     Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::index() expects array|string,    
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  69     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  69     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  72     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  77     Cannot access offset 'model_has_roles' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  77     Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::create() expects string, mixed      
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  78     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  81     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  81     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  82     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  84     Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::foreign() expects array|string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  86     Cannot access offset 'roles' on mixed.                                 
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  86     Parameter #1 $table of method                                          
+         Illuminate\Database\Schema\ForeignKeyDefinition::on() expects string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  89     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  89     Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  90     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  90     Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::index() expects array|string,    
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  92     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  92     Cannot access offset 'team_foreign_key' on mixed.                      
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  95     Cannot access offset 'model_morph_key' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  100    Cannot access offset 'role_has_permissions' on mixed.                  
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  100    Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::create() expects string, mixed      
+         given.                                                                 
+         ЁЯкк  argument.type                                                      
+  101    Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  102    Parameter #1 $column of method                                         
+         Illuminate\Database\Schema\Blueprint::unsignedBigInteger() expects     
+         string, mixed given.                                                   
+         ЁЯкк  argument.type                                                      
+  104    Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::foreign() expects array|string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  106    Cannot access offset 'permissions' on mixed.                           
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  106    Parameter #1 $table of method                                          
+         Illuminate\Database\Schema\ForeignKeyDefinition::on() expects string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  109    Parameter #1 $columns of method                                        
+         Illuminate\Database\Schema\Blueprint::foreign() expects array|string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  111    Cannot access offset 'roles' on mixed.                                 
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  111    Parameter #1 $table of method                                          
+         Illuminate\Database\Schema\ForeignKeyDefinition::on() expects string,  
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  118    Parameter #1 $name of method Illuminate\Cache\CacheManager::store()    
+         expects string|UnitEnum|null, mixed given.                             
+         ЁЯкк  argument.type                                                      
+  119    Parameter #1 $key of method                                            
+         Illuminate\Contracts\Cache\Repository::forget() expects                
+         string|UnitEnum, mixed given.                                          
+         ЁЯкк  argument.type                                                      
+  131    Cannot access offset 'role_has_permissions' on mixed.                  
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  131    Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::dropIfExists() expects string,      
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  132    Cannot access offset 'model_has_roles' on mixed.                       
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  132    Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::dropIfExists() expects string,      
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  133    Cannot access offset 'model_has_permissions' on mixed.                 
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  133    Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::dropIfExists() expects string,      
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  134    Cannot access offset 'roles' on mixed.                                 
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  134    Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::dropIfExists() expects string,      
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+  135    Cannot access offset 'permissions' on mixed.                           
+         ЁЯкк  offsetAccess.nonOffsetAccessible                                   
+  135    Parameter #1 $table of static method                                   
+         Illuminate\Support\Facades\Schema::dropIfExists() expects string,      
+         mixed given.                                                           
+         ЁЯкк  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   database/migrations/2026_06_14_000001_add_required_permission_id_to_p  
+         osts_table.php                                                         
+ ------ ----------------------------------------------------------------------- 
+  72     Binary operation "." between 'permission:' and mixed results in an     
+         error.                                                                 
+         ЁЯкк  binaryOp.invalid                                                   
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------- 
+  Line   database/seeders/MailSettingsSeeder.php        
+ ------ ----------------------------------------------- 
+  24     Cannot access offset 'mode' on mixed.          
+         ЁЯкк  offsetAccess.nonOffsetAccessible           
+  24     Cannot cast mixed to string.                   
+         ЁЯкк  cast.string                                
+  25     Cannot access offset 'preset' on mixed.        
+         ЁЯкк  offsetAccess.nonOffsetAccessible           
+  25     Cannot cast mixed to string.                   
+         ЁЯкк  cast.string                                
+  26     Cannot access offset 'from_address' on mixed.  
+         ЁЯкк  offsetAccess.nonOffsetAccessible           
+  26     Cannot cast mixed to string.                   
+         ЁЯкк  cast.string                                
+  27     Cannot access offset 'from_name' on mixed.     
+         ЁЯкк  offsetAccess.nonOffsetAccessible           
+  27     Cannot cast mixed to string.                   
+         ЁЯкк  cast.string                                
+ ------ ----------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   database/seeders/Rbac/PermissionSeeder.php                           
+ ------ --------------------------------------------------------------------- 
+  15     Argument of an invalid type mixed supplied for foreach, only         
+         iterables are supported.                                             
+         ЁЯкк  foreach.nonIterable                                              
+  16     Parameter #1 $name of static method                                  
+         Spatie\Permission\Models\Permission::findOrCreate() expects string,  
+         mixed given.                                                         
+         ЁЯкк  argument.type                                                    
+ ------ --------------------------------------------------------------------- 
+
+ ------ ------------------------------ 
+  Line   routes/console.php            
+ ------ ------------------------------ 
+  12     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  15     Cannot cast mixed to string.  
+         ЁЯкк  cast.string               
+  20     Cannot cast mixed to int.     
+         ЁЯкк  cast.int                  
+ ------ ------------------------------ 
+
+ [ERROR] Found 161 errors                                                       
+
+Script phpstan analyse --no-progress --memory-limit=512M handling the analyse event returned with error code 1

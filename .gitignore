@@ -1,0 +1,72 @@
+# --- OS & editors ---
+.DS_Store
+Thumbs.db
+*.log
+.phpactor.json
+/.codex
+/.cursor/
+/.idea/
+/.nova/
+/.vscode/
+/.zed/
+/auth.json
+Homestead.json
+Homestead.yaml
+_ide_helper.php
+
+# --- Laravel / PHP ---
+/vendor/
+/.phpunit.cache
+.phpunit.result.cache
+/coverage/
+/storage/*.key
+/storage/pail/
+/storage/framework/w3c-fixtures/
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# --- Environment (never commit secrets) ---
+.env
+.env.backup
+.env.production
+.env.*.local
+!.env.example
+!.env.production.example
+!.env.testing
+
+# --- Node / frontend ---
+/node_modules/
+/public/build/
+/public/hot/
+/public/fonts-manifest.dev.json
+/public/storage
+
+# --- Python (ai-service) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+ai-service/.venv/
+ai-service/dist/
+ai-service/build/
+
+# --- Audit / CI artefacts (local runs) ---
+/reports/*.txt
+/reports/*.md
+!/reports/.gitignore
+
+# --- Internal documentation (dev/agent only; excluded from release) ---
+/docs/AGENT_HANDOFF.md
+/docs/TECH_DEBT.md
+/docs/REMEDIATION_PLAN.md
+/docs/REMEDIATION_CONTINUATION.md
+/docs/WORK_PLAN.md
+/docs/PHASE_*_PLAN.md
+/docs/TURNKEY_OPTIMIZATION_PLAN.md
+/docs/SPRINT_FINAL_PLAN.md
+/docs/AUDIT_IMPLEMENTATION_PLAN.md
+/docs/AUDIT_CHECKLIST.md
+/docs/AUDIT_FINAL_REPORT.md
+/docs/PROJECT_CLOSURE.md

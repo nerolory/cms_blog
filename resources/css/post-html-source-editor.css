@@ -1,0 +1,13 @@
+textarea.post-html-source-editor {
+    min-height: 480px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-color: #343a40;
+    resize: vertical;
+}

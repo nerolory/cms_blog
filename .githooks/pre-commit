@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Опциональный pre-commit hook.
+# Подключение (один раз): git config core.hooksPath .githooks
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+echo "[pre-commit] PHP checks (Docker)..."
+docker compose exec -T php composer check:php
+
+echo "[pre-commit] Frontend checks (host)..."
+npm run check:frontend
+
+echo "[pre-commit] OK"

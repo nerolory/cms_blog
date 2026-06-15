@@ -1,0 +1,32 @@
+# Exclude from release archives (git archive, GitHub Release source zip).
+# Public clone still contains tracked files; run `git rm --cached` once for
+# paths already in history if you stop tracking internal docs.
+
+/docs/AGENT_HANDOFF.md export-ignore
+/docs/TECH_DEBT.md export-ignore
+/docs/REMEDIATION_PLAN.md export-ignore
+/docs/REMEDIATION_CONTINUATION.md export-ignore
+/docs/WORK_PLAN.md export-ignore
+/docs/PHASE_4_PLAN.md export-ignore
+/docs/PHASE_5_PLAN.md export-ignore
+/docs/TURNKEY_OPTIMIZATION_PLAN.md export-ignore
+/docs/SPRINT_FINAL_PLAN.md export-ignore
+/docs/AUDIT_IMPLEMENTATION_PLAN.md export-ignore
+/docs/AUDIT_CHECKLIST.md export-ignore
+/docs/AUDIT_FINAL_REPORT.md export-ignore
+/docs/PROJECT_CLOSURE.md export-ignore
+/reports/ export-ignore
+/.cursor/ export-ignore
+/scripts/render-w3c-fixtures.php export-ignore
+/storage/framework/w3c-fixtures/ export-ignore
+
+# Normalize line endings
+*.php text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.css text eol=lf
+*.blade.php text eol=lf

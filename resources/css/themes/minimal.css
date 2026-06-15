@@ -1,0 +1,12 @@
+.theme-minimal .card {
+    box-shadow: none !important;
+    border-radius: 0;
+}
+
+.theme-minimal .navbar {
+    box-shadow: none;
+}
+
+.theme-minimal main.container {
+    max-width: 720px;
+}

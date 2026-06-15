@@ -1,0 +1,71 @@
+# syntax=docker/dockerfile:1
+
+FROM node:20-alpine AS assets
+
+WORKDIR /build
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY vite.config.js ./
+COPY scripts/copy-tinymce.mjs ./scripts/copy-tinymce.mjs
+COPY resources ./resources
+COPY public ./public
+
+RUN npm run build
+
+FROM composer:2 AS vendor
+
+WORKDIR /build
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+COPY . .
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
+
+FROM php:8.3-fpm AS runtime
+
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libicu-dev \
+    zip \
+    unzip \
+    supervisor \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
+    && docker-php-ext-install pdo_pgsql pgsql gd zip intl bcmath opcache
+
+RUN git clone https://github.com/phpredis/phpredis.git /tmp/phpredis \
+    && cd /tmp/phpredis \
+    && phpize \
+    && ./configure \
+    && make \
+    && make install \
+    && docker-php-ext-enable redis \
+    && rm -rf /tmp/phpredis
+
+WORKDIR /var/www/html
+
+COPY --from=vendor /build /var/www/html
+COPY --from=assets /build/public/build /var/www/html/public/build
+
+RUN mkdir -p storage/framework/views bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+RUN echo "listen = 0.0.0.0:9000" >> /usr/local/etc/php-fpm.d/www.conf
+
+COPY backend/php/conf.d/99-docker-mount-performance.ini /usr/local/etc/php/conf.d/99-docker-mount-performance.ini
+COPY backend/php/docker-entrypoint.sh /usr/local/bin/demo-entrypoint.sh
+RUN chmod +x /usr/local/bin/demo-entrypoint.sh
+
+EXPOSE 9000
+
+ENTRYPOINT ["demo-entrypoint.sh"]

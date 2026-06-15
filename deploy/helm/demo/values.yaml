@@ -1,0 +1,47 @@
+replicaCount: 1
+
+image:
+  repository: cms-blog
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: nginx
+  hosts:
+    - host: demo.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources: {}
+
+worker:
+  enabled: true
+  replicaCount: 1
+
+aiService:
+  enabled: false
+  image:
+    repository: demo-ai-service
+    tag: latest
+
+database:
+  external: true
+  host: postgresql
+  port: 5432
+  name: laravel
+  username: laravel
+
+redis:
+  external: true
+  host: redis
+  port: 6379
+
+probes:
+  livenessPath: /up
+  readinessPath: /health

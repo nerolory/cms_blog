@@ -1,0 +1,19 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+    - tools/phpstan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app/
+        - config/
+        - database/
+        - routes/
+        - tests/
+        - tools/phpstan/
+    excludePaths:
+        analyse:
+            - database/migrations/*
+    level: 9
+    treatPhpDocTypesAsCertain: false

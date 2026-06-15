@@ -1,0 +1,73 @@
+# CMS Blog License (CBL) Version 1.0
+
+Copyright (c) 2026 CMS Blog Contributors
+
+## Third-party components
+
+This application includes third-party software under permissive licenses
+(including MIT), notably the Laravel framework, Filament, FastAPI, and their
+dependencies. Those components remain governed by **their respective licenses**.
+This license applies to the **CMS Blog** original source code and
+documentation in this repository, except where a file carries a different
+notice.
+
+## Permission
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to:
+
+- use, copy, modify, and merge the Software;
+- deploy the Software privately or commercially for yourself or your clients;
+- integrate portions of the Software into other applications or systems;
+- offer **professional services** (installation, configuration, customization,
+  integration, maintenance, training) related to the Software, including for
+  commercial clients, provided the restrictions below are respected.
+
+## Restrictions
+
+1. **No standalone resale.** You must not sell, license, sublicense, or
+   distribute the Software—or a substantially similar standalone copy or
+   template—as a **commercial product** on its own (including marketplaces,
+   SaaS resale of an unmodified turnkey bundle, or white-label product sales
+   where the Software itself is the primary deliverable for purchase).
+
+2. **License notice.** You must retain this license text and copyright notice in
+   all source distributions and substantial forks.
+
+3. **No misrepresentation.** You must not imply endorsement by the copyright
+   holders without written permission.
+
+4. **Compliance.** Your use must comply with applicable law and with the
+   licenses of all bundled third-party dependencies.
+
+## Allowed commercial scenarios (examples)
+
+- Deploying the application for a company or government project.
+- Integrating post management, moderation, or AI-order flows into a larger
+  commercial platform.
+- Offering **free or paid** deployment, hosting setup, or integration services
+  where the client pays for **work and outcomes**, not for a license to resell
+  the Software as a product.
+- Internal use within a commercial organization.
+
+## Professional services
+
+Third parties may offer deployment and integration services under this license.
+The copyright holder may also offer such services (installation, hardening,
+custom modules, migration from legacy systems). Contact the maintainer via the
+repository issue tracker or the channels listed in `README.md`.
+
+## Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Summary (not a substitute for the license)
+
+You may deploy and integrate commercially; you may **not** sell the project as a
+standalone product. Read the full text above before use.

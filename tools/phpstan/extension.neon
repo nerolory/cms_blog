@@ -1,0 +1,13 @@
+services:
+    -
+        class: App\Tools\PhpStan\Rules\DisallowRawArrayRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: App\Tools\PhpStan\Rules\RequireFilamentFormStateRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: App\Tools\PhpStan\Rules\RequirePhpDocRule
+        tags:
+            - phpstan.rules.rule

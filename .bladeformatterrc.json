@@ -1,0 +1,10 @@
+{
+    "indentSize": 4,
+    "wrapAttributes": "auto",
+    "wrapAttributesMinAttrs": 2,
+    "wrapLineLength": 120,
+    "endWithNewLine": true,
+    "endOfLine": "LF",
+    "useTabs": false,
+    "sortTailwindcssClasses": false
+}

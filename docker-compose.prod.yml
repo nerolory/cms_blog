@@ -1,0 +1,142 @@
+# Production-oriented Compose stack.
+# Profiles:
+#   install — one-shot bootstrap (migrate, seed) on baked image
+#   prod    — long-running web, queue worker, optional AI
+
+services:
+
+  install:
+    profiles: ["install"]
+    image: cms-blog-php:prod
+    build:
+      context: .
+      dockerfile: backend/php/Dockerfile.prod
+    working_dir: /var/www/html
+    env_file:
+      - .env
+    environment:
+      APP_AUTO_BOOTSTRAP: "false"
+    depends_on:
+      - database
+      - redis
+    networks:
+      - app_network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        php artisan key:generate --force --no-interaction || true
+        php artisan migrate --force
+        php artisan app:bootstrap --force
+        echo "Install profile complete."
+
+  php:
+    profiles: ["prod"]
+    image: cms-blog-php:prod
+    build:
+      context: .
+      dockerfile: backend/php/Dockerfile.prod
+    restart: unless-stopped
+    working_dir: /var/www/html
+    env_file:
+      - .env
+    environment:
+      APP_AUTO_BOOTSTRAP: "false"
+    volumes:
+      - laravel_storage:/var/www/html/storage
+      - laravel_bootstrap_cache:/var/www/html/bootstrap/cache
+    depends_on:
+      - database
+      - redis
+    networks:
+      - app_network
+
+  nginx:
+    profiles: ["prod"]
+    build:
+      context: .
+      dockerfile: backend/nginx/Dockerfile.prod
+    restart: unless-stopped
+    ports:
+      - "${HOST_HTTP_PORT:-80}:80"
+    depends_on:
+      - php
+    networks:
+      - app_network
+
+  database:
+    profiles: ["prod", "install"]
+    build:
+      context: .
+      dockerfile: backend/postgresql/Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  redis:
+    profiles: ["prod", "install"]
+    build:
+      context: .
+      dockerfile: backend/redis/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redisdata:/data
+    networks:
+      - app_network
+
+  queue:
+    profiles: ["prod"]
+    image: cms-blog-php:prod
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file:
+      - .env
+    environment:
+      APP_AUTO_BOOTSTRAP: "false"
+    volumes:
+      - laravel_storage:/var/www/html/storage
+      - laravel_bootstrap_cache:/var/www/html/bootstrap/cache
+    depends_on:
+      - database
+      - redis
+    networks:
+      - app_network
+
+  ai-service:
+    profiles: ["prod", "ai"]
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${HOST_AI_SERVICE_PORT:-8100}:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${AI_SERVICE_DATABASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+    depends_on:
+      - database
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  laravel_storage:
+  laravel_bootstrap_cache:

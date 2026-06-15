@@ -1,0 +1,53 @@
+.post-body blockquote.post-quote,
+.post-body blockquote {
+    margin: 1rem 0;
+    padding: 0.85rem 1.1rem;
+    border-left: 4px solid var(--post-primary, var(--bs-primary));
+    border-radius: 0 0.375rem 0.375rem 0;
+    background: color-mix(in srgb, var(--post-primary, var(--bs-primary)) 12%, transparent);
+}
+
+.post-body details.mce-accordion,
+.post-body details.post-spoiler {
+    margin: 1rem 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.post-body details.mce-accordion summary,
+.post-body details.post-spoiler summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    list-style: none;
+    background: var(--bs-tertiary-bg);
+}
+
+.post-body details.mce-accordion summary::-webkit-details-marker,
+.post-body details.post-spoiler summary::-webkit-details-marker {
+    display: none;
+}
+
+.post-body details.mce-accordion .mce-accordion-body,
+.post-body details.post-spoiler .post-spoiler__body {
+    padding: 0.85rem 1rem 1rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.post-body pre[class*='language-'],
+.post-body pre.post-code-block {
+    tab-size: 4;
+    margin: 1rem 0;
+    border-radius: 0.375rem;
+    overflow: auto;
+}
+
+.post-body pre[class*='language-'] code,
+.post-body pre.post-code-block code {
+    tab-size: 4;
+    white-space: pre;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
