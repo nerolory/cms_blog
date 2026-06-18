@@ -1,13 +1,17 @@
+@php
+    $siteName = app(\App\Services\Contracts\SiteSettingsServiceContract::class)->siteName();
+@endphp
+
 @extends(theme_layout('app'))
 
-@section('title', config('app.name'))
+@section('title', $siteName)
 
 @section('content')
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body p-4 p-lg-5">
-                    <h1 class="h3 mb-3">{{ __('welcome.heading', ['app' => config('app.name', 'Laravel')]) }}</h1>
+                    <h1 class="h3 mb-3">{{ __('welcome.heading', ['app' => $siteName]) }}</h1>
                     <p class="text-muted mb-4">
                         {{ __('welcome.description') }}
                     </p>

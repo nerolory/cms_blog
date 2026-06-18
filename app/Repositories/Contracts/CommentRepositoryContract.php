@@ -11,76 +11,42 @@ use Illuminate\Support\Collection;
  */
 interface CommentRepositoryContract
 {
-    /**
-     * Создаёт .
-     *
-     * @param  CommentData  $data  данные формы
-
-     * @return PostComment
-     */
     public function create(CommentData $data): PostComment;
 
     /**
-     * Возвращает visible root comments for post.
-     *
-     * @param  int  $postId  id
-     */
-    /**
-     * Возвращает visible root comments for post.
-     */
-    /**
-     * Возвращает корневые комментарии поста.
-     *
      * @return Collection<int, PostComment>
      */
-    public function getVisibleRootCommentsForPost(int $postId): Collection;
+    public function getVisibleRootCommentsForPost(int $postId, int $limit = 10, int $offset = 0): Collection;
+
+    public function countVisibleRootsForPost(int $postId): int;
 
     /**
-     * Находит by id.
-
-     *
-     * @return ?PostComment
+     * @return Collection<int, PostComment>
      */
+    public function getVisibleThreadReplies(int $threadRootId, int $limit = 10, int $offset = 0): Collection;
+
+    public function countVisibleThreadReplies(int $threadRootId): int;
+
     public function findById(int $id): ?PostComment;
 
-    /**
-     * hide.
-
-     *
-     * @return PostComment
-     */
     public function hide(PostComment $comment): PostComment;
 
-    /**
-     * Удаляет .
-
-     *
-     * @return bool
-     */
     public function delete(PostComment $comment): bool;
 
-    /**
-     * count pending moderation.
-
-     *
-     * @return int
-     */
     public function countPendingModeration(): int;
 
-    /**
-     * oldest pending age minutes.
-
-     *
-     * @return ?int
-     */
     public function oldestPendingAgeMinutes(): ?int;
 
-    /**
-     * count visible for post.
-     *
-     * @param  int  $postId  id
-
-     * @return int
-     */
     public function countVisibleForPost(int $postId): int;
+
+    /**
+     * @return array{totalRoots: int, totalVisible: int}
+     */
+    public function getVisibleSectionStats(int $postId): array;
+
+    /**
+     * @param  list<int>  $rootIds
+     * @return Collection<int, int>
+     */
+    public function countVisibleRepliesByRootIds(array $rootIds): Collection;
 }

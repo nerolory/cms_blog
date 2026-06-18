@@ -28,10 +28,10 @@ return [
             'body' => 'Body',
             'status' => 'Status',
             'visibility' => 'Visibility',
+            'required_permission' => 'Required permission',
             'author' => 'Author',
             'rejection_reason' => 'Rejection reason',
             'published_at' => 'Published at',
-            'required_permission' => 'Required permission',
             'featured_image' => 'Featured image',
             'background_image' => 'Background image',
             'theme_primary_color' => 'Primary color',
@@ -55,6 +55,7 @@ return [
                 'approved' => 'Approved',
                 'rejected' => 'Rejected',
                 'updated' => 'Updated',
+                'restored' => 'Restored',
             ],
         ],
         'seo' => [
@@ -68,6 +69,14 @@ return [
                 'robots' => 'Robots',
                 'robots_auto' => 'Auto (from status and visibility)',
             ],
+        ],
+        'versions' => [
+            'title' => 'Versions',
+            'number' => '#',
+            'author' => 'Author',
+            'created_at' => 'Created',
+            'restore' => 'Restore',
+            'restored' => 'Version restored.',
         ],
     ],
 
@@ -83,19 +92,33 @@ return [
             'avatar' => 'Avatar',
             'roles' => 'Roles',
             'email_verified' => 'Email verified',
+            'account_status' => 'Account status',
+            'token_balance' => 'Tokens',
+            'grant_amount' => 'Token amount',
+            'grant_note' => 'Note',
         ],
         'filters' => [
             'email_verified' => 'Email verified',
             'email_verified_yes' => 'Verified',
             'email_verified_no' => 'Not verified',
+            'account_status' => 'Account status',
         ],
         'actions' => [
             'activate' => 'Activate',
             'deactivate' => 'Deactivate',
+            'suspend' => 'Suspend',
+            'grant_tokens' => 'Grant tokens',
         ],
         'notifications' => [
             'activated' => 'User activated.',
             'deactivated' => 'User deactivated.',
+            'suspended' => 'User suspended.',
+            'tokens_granted' => 'Tokens granted.',
+        ],
+        'account_status' => [
+            'pending' => 'Pending',
+            'active' => 'Active',
+            'suspended' => 'Suspended',
         ],
     ],
 
@@ -135,6 +158,25 @@ return [
         ],
     ],
 
+    'site' => [
+        'navigation' => 'Site',
+        'title' => 'Site settings',
+        'sections' => [
+            'branding' => 'Branding',
+            'branding_help' => 'Shown in the public navbar and as the admin panel brand name.',
+        ],
+        'fields' => [
+            'site_name' => 'Site name',
+            'site_name_help' => 'Cached for one year; saving clears the cache automatically.',
+        ],
+        'actions' => [
+            'save' => 'Save',
+        ],
+        'notifications' => [
+            'saved' => 'Site settings saved.',
+        ],
+    ],
+
     'search' => [
         'navigation' => 'Search',
         'title' => 'Search settings',
@@ -165,6 +207,41 @@ return [
 
     'roles' => [
         'navigation' => 'Roles',
+    ],
+
+    'categories' => [
+        'navigation' => 'Categories',
+    ],
+
+    'tags' => [
+        'navigation' => 'Tags',
+    ],
+
+    'comments' => [
+        'navigation' => 'Comments',
+        'actions' => [
+            'hide' => 'Hide',
+        ],
+    ],
+
+    'site_health' => [
+        'navigation' => 'Site health',
+        'title' => 'Site health',
+        'latest_report' => 'Latest report',
+        'completed_at' => 'Completed: :date',
+        'context' => 'Context',
+        'empty' => 'No reports yet. Run a check.',
+        'stats' => [
+            'critical' => 'Critical',
+            'warning' => 'Warnings',
+            'passed' => 'Passed',
+        ],
+        'actions' => [
+            'run' => 'Run check',
+        ],
+        'notifications' => [
+            'queued' => 'Check queued.',
+        ],
     ],
 
     'site_templates' => [
@@ -199,6 +276,56 @@ return [
             'notifications' => [
                 'deleted' => 'Theme deleted.',
             ],
+        ],
+    ],
+
+    'moderation_sla' => [
+        'pending' => 'Pending moderation',
+        'pending_description' => 'Posts awaiting a decision',
+        'oldest' => 'Oldest in queue',
+        'sla_limit' => 'SLA: :minutes min',
+    ],
+
+    'ai_orders' => [
+        'navigation' => 'AI analysis orders',
+        'fields' => [
+            'user' => 'User',
+            'comment_count' => 'Comments',
+            'tokens_required' => 'Tokens',
+            'admin_note' => 'Admin note',
+        ],
+        'status' => [
+            'pending' => 'Pending',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'executing' => 'Running',
+            'completed' => 'Completed',
+            'failed' => 'Failed',
+        ],
+        'actions' => [
+            'approve' => 'Approve',
+            'reject' => 'Reject',
+            'execute' => 'Execute',
+            'execute_confirm' => 'Charge tokens and write demo result to cache?',
+            'auto_calculation' => 'Automatic calculation',
+            'auto_calculation_tooltip' => 'Not available in demo — contact the author.',
+        ],
+        'notifications' => [
+            'approved' => 'Order approved.',
+            'rejected' => 'Order rejected.',
+            'executed' => 'Analysis completed, result saved to cache.',
+        ],
+    ],
+
+    'token_packages' => [
+        'navigation' => 'Token packages',
+        'fields' => [
+            'name' => 'Name',
+            'token_amount' => 'Token amount',
+            'price_cents' => 'Price (cents)',
+            'currency' => 'Currency',
+            'sort_order' => 'Sort order',
+            'is_active' => 'Active',
         ],
     ],
 ];

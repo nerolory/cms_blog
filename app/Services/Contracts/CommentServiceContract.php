@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\DTO\CommentData;
+use App\DTO\CommentSectionData;
 use App\Models\PostComment;
 use Illuminate\Support\Collection;
 
@@ -11,51 +12,38 @@ use Illuminate\Support\Collection;
  */
 interface CommentServiceContract
 {
-    /**
-     * Создаёт .
-     *
-     * @param  CommentData  $data  данные формы
-
-     * @return PostComment
-     */
     public function create(CommentData $data): PostComment;
 
+    public function getSectionForPost(int $postId, ?int $userId): CommentSectionData;
+
+    public function forgetSectionCacheForPost(int $postId): void;
+
     /**
-     * Возвращает visible tree for post.
-     *
-     * @param  int  $postId  id
+     * @return Collection<int, PostComment>
      */
+    public function getRootPage(int $postId, int $offset): Collection;
+
     /**
-     * Возвращает visible tree for post.
+     * @return array{replies: Collection<int, PostComment>, hasMore: bool, total: int}
      */
+    public function getThreadRepliesPage(int $threadRootId, int $offset): array;
+
     /**
-     * Возвращает дерево комментариев поста.
-     *
      * @return Collection<int, PostComment>
      */
     public function getVisibleTreeForPost(int $postId): Collection;
 
-    /**
-     * hide.
+    public function countRootsForPost(int $postId): int;
 
-     *
-     * @return PostComment
+    /**
+     * @param  list<int>  $rootIds
+     * @return Collection<int, int>
      */
+    public function replyCountsForRoots(array $rootIds): Collection;
+
     public function hide(PostComment $comment): PostComment;
 
-    /**
-     * Удаляет .
-
-     *
-     * @return bool
-     */
     public function delete(PostComment $comment): bool;
 
-    /**
-     * Находит комментарий, принадлежащий посту.
-
-     *
-     * @return PostComment
-     */
     public function findForPost(int $postId, int $commentId): PostComment;
 }

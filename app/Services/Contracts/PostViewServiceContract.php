@@ -3,7 +3,9 @@
 namespace App\Services\Contracts;
 
 use App\DTO\PostEngagementData;
+use App\DTO\PostListEngagementItem;
 use App\Models\Post;
+use Illuminate\Support\Collection;
 
 /**
  * Контракт сервиса post view.
@@ -29,6 +31,14 @@ interface PostViewServiceContract
      * @return PostEngagementData
      */
     public function getEngagement(Post $post, ?int $userId, ?int $viewsCount = null): PostEngagementData;
+
+    /**
+     * Сводка просмотров и реакций для карточек в списке постов.
+     *
+     * @param  list<int>  $postIds
+     * @return Collection<int, PostListEngagementItem>
+     */
+    public function getListingEngagementForPostIds(array $postIds): Collection;
 
     /**
      * Сбрасывает накопленные в Redis счётчики просмотров в БД.

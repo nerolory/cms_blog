@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use App\DTO\SiteSettingsData;
+use App\Services\Contracts\SiteSettingsServiceContract;
+use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
+
+/**
+ * Страница настроек брендинга сайта (название в шапке и админке).
+ *
+ * @property Schema $form
+ * @property-read SiteSettingsServiceContract $siteSettingsService
+ */
+class SiteSettingsPage extends Page
+{
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
+
+    protected SiteSettingsServiceContract $siteSettingsService;
+
+    protected static ?string $navigationLabel = null;
+
+    protected static ?string $title = null;
+
+    protected static ?string $slug = 'site-settings';
+
+    protected static ?int $navigationSort = 88;
+
+    /**
+     * @var array<string, mixed>|null
+     */
+    public ?array $data = [];
+
+    /**
+     * Внедряет сервис настроек сайта для form().
+     */
+    public function boot(SiteSettingsServiceContract $siteSettingsService): void
+    {
+        $this->siteSettingsService = $siteSettingsService;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('admin.site.navigation');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('admin.navigation.system');
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return __('admin.site.title');
+    }
+
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->can('settings.manage');
+    }
+
+    public function mount(SiteSettingsServiceContract $siteSettingsService): void
+    {
+        $this->form->fill($siteSettingsService->settings()->toFormState());
+    }
+
+    public function save(SiteSettingsServiceContract $siteSettingsService): void
+    {
+        /** @var array<string, mixed> $state */
+        $state = $this->form->getState();
+        $siteSettingsService->saveSettings(SiteSettingsData::fromFilament($state));
+        Notification::make()->success()->title(__('admin.site.notifications.saved'))->send();
+    }
+
+    public function defaultForm(Schema $schema): Schema
+    {
+        return $schema->statePath('data');
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make(__('admin.site.sections.branding'))
+                ->description(__('admin.site.sections.branding_help'))
+                ->schema([
+                    TextInput::make('site_name')
+                        ->label(__('admin.site.fields.site_name'))
+                        ->required()
+                        ->maxLength(255)
+                        ->helperText(__('admin.site.fields.site_name_help')),
+                ]),
+        ]);
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([$this->getFormContentComponent()]);
+    }
+
+    protected function getFormContentComponent(): Component
+    {
+        return Form::make([EmbeddedSchema::make('form')])
+            ->id('site-settings-form')
+            ->livewireSubmitHandler('save')
+            ->footer([
+                Actions::make([
+                    Action::make('save')
+                        ->label(__('admin.site.actions.save'))
+                        ->submit('save'),
+                ]),
+            ]);
+    }
+
+    /**
+     * @return array<int, Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [];
+    }
+}

@@ -15,18 +15,26 @@
 /docs/AUDIT_CHECKLIST.md export-ignore
 /docs/AUDIT_FINAL_REPORT.md export-ignore
 /docs/PROJECT_CLOSURE.md export-ignore
+/docs/REFACTORING_PLAN.md export-ignore
 /reports/ export-ignore
 /.cursor/ export-ignore
 /scripts/render-w3c-fixtures.php export-ignore
 /storage/framework/w3c-fixtures/ export-ignore
 
-# Normalize line endings
-*.php text eol=lf
-*.md text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
-*.sh text eol=lf
-*.js text eol=lf
-*.ts text eol=lf
-*.css text eol=lf
-*.blade.php text eol=lf
+# Line endings: LF in repo and working tree (see .editorconfig).
+* text=auto eol=lf
+
+# Binary assets (do not normalize).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.gz binary

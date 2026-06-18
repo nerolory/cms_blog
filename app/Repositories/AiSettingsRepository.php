@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\DTO\AiSettingsData;
 use App\Models\Setting;
 use App\Repositories\Contracts\AiSettingsRepositoryContract;
+use App\Services\Contracts\AiSettingsServiceContract;
 use App\Support\Ai\AiSettingKey;
 use App\Support\TypeCast;
 
@@ -45,6 +46,9 @@ class AiSettingsRepository implements AiSettingsRepositoryContract
             return;
         }
         $this->setting->newQuery()->updateOrCreate(['key' => $key->value], ['value' => $value]);
+        if (app()->bound(AiSettingsServiceContract::class)) {
+            app(AiSettingsServiceContract::class)->forgetSettingsCache();
+        }
     }
 
     /**
@@ -60,14 +64,47 @@ class AiSettingsRepository implements AiSettingsRepositoryContract
         /** @var array<string, mixed> $tokenDefaults */
         $tokenDefaults = TypeCast::array($defaults['tokens'] ?? []);
 
-        return new AiSettingsData(cooldownDays: $this->readInt($this->get(AiSettingKey::CooldownDays),
-            TypeCast::int($defaults['cooldown_days'] ?? 7, 7)),
-            autoAnalysisCommentThreshold: $this->readInt($this->get(AiSettingKey::AutoAnalysisThreshold),
-                TypeCast::int($defaults['auto_analysis_comment_threshold'] ?? 1000, 1000)),
-            tokensMinimum: $this->readInt($this->get(AiSettingKey::TokensMinimum),
-                TypeCast::int($tokenDefaults['minimum'] ?? 10, 10)),
-            tokensPerComment: $this->readInt($this->get(AiSettingKey::TokensPerComment),
-                TypeCast::int($tokenDefaults['per_comment'] ?? 1, 1)));
+        $values = $this->getMany([
+            AiSettingKey::CooldownDays,
+            AiSettingKey::AutoAnalysisThreshold,
+            AiSettingKey::TokensMinimum,
+            AiSettingKey::TokensPerComment,
+        ]);
+
+        return new AiSettingsData(
+            cooldownDays: $this->readInt(
+                $values[AiSettingKey::CooldownDays->value] ?? null,
+                TypeCast::int($defaults['cooldown_days'] ?? 7, 7),
+            ),
+            autoAnalysisCommentThreshold: $this->readInt(
+                $values[AiSettingKey::AutoAnalysisThreshold->value] ?? null,
+                TypeCast::int($defaults['auto_analysis_comment_threshold'] ?? 1000, 1000),
+            ),
+            tokensMinimum: $this->readInt(
+                $values[AiSettingKey::TokensMinimum->value] ?? null,
+                TypeCast::int($tokenDefaults['minimum'] ?? 10, 10),
+            ),
+            tokensPerComment: $this->readInt(
+                $values[AiSettingKey::TokensPerComment->value] ?? null,
+                TypeCast::int($tokenDefaults['per_comment'] ?? 1, 1),
+            ),
+        );
+    }
+
+    /**
+     * @param  list<AiSettingKey>  $keys
+     * @return array<string, ?string>
+     */
+    private function getMany(array $keys): array
+    {
+        $keyValues = array_map(static fn (AiSettingKey $key): string => $key->value, $keys);
+        $records = $this->setting->newQuery()->whereIn('key', $keyValues)->pluck('value', 'key');
+        $values = [];
+        foreach ($keys as $key) {
+            $values[$key->value] = $records->get($key->value);
+        }
+
+        return $values;
     }
 
     private function readInt(?string $value, int $default): int

@@ -6,9 +6,13 @@ use App\DTO\MailSettingsData;
 use App\DTO\ResolvedMailerConfig;
 use App\Repositories\Contracts\MailSettingsRepositoryContract;
 use App\Services\Contracts\MailSettingsServiceContract;
+use App\Support\Cache\ApplicationCacheKeys;
 use App\Support\TypeCast;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 
@@ -19,16 +23,27 @@ use InvalidArgumentException;
  */
 class MailSettingsService implements MailSettingsServiceContract
 {
-    public function __construct(protected MailSettingsRepositoryContract $mailSettingsRepository) {}
+    private const CACHE_TTL_SECONDS = 3600;
+
+    private ?MailSettingsData $cachedSettings = null;
+
+    private bool $configurationApplied = false;
+
+    public function __construct(protected MailSettingsRepositoryContract $mailSettingsRepository)
+    {
+        Event::listen(MessageSending::class, function (): void {
+            $this->applyConfiguration();
+        });
+    }
 
     /**
      * apply configuration.
-
-     *
-     * @return bool
      */
     public function applyConfiguration(): bool
     {
+        if ($this->configurationApplied) {
+            return true;
+        }
         $settings = $this->settings();
         $resolved = $this->resolveMailer($settings);
         $runtimeMailer = TypeCast::string(config('mail-module.runtime_mailer', 'runtime'), 'runtime');
@@ -36,31 +51,34 @@ class MailSettingsService implements MailSettingsServiceContract
         Config::set('mail.default', $runtimeMailer);
         Config::set('mail.from.address', $settings->fromAddress);
         Config::set('mail.from.name', $settings->fromName);
+        $this->configurationApplied = true;
 
         return true;
     }
 
     /**
      * settings.
-
-     *
-     * @return MailSettingsData
      */
     public function settings(): MailSettingsData
     {
-        return $this->mailSettingsRepository->getMailSettings();
+        if ($this->cachedSettings instanceof MailSettingsData) {
+            return $this->cachedSettings;
+        }
+
+        /** @var array<string, mixed> $payload */
+        $payload = Cache::remember(ApplicationCacheKeys::MAIL_SETTINGS, self::CACHE_TTL_SECONDS,
+            fn (): array => $this->mailSettingsPayloadFromDatabase());
+
+        return $this->cachedSettings = $this->mailSettingsFromPayload($payload);
     }
 
     /**
      * save settings.
-     *
-     * @param  MailSettingsData  $data  данные формы
-
-     * @return MailSettingsData
      */
     public function saveSettings(MailSettingsData $data): MailSettingsData
     {
         $this->mailSettingsRepository->saveMailSettings($data);
+        $this->forgetSettingsCache();
         $this->applyConfiguration();
 
         return $this->settings();
@@ -85,9 +103,6 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * send test message.
-
-     *
-     * @return bool
      */
     public function sendTestMessage(string $recipient): bool
     {
@@ -102,13 +117,60 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * Проверяет email verification required.
-
-     *
-     * @return bool
      */
     public function isEmailVerificationRequired(): bool
     {
         return $this->settings()->requireEmailVerification;
+    }
+
+    /**
+     * Сбрасывает кэш настроек почты.
+     */
+    public function forgetSettingsCache(): void
+    {
+        Cache::forget(ApplicationCacheKeys::MAIL_SETTINGS);
+        $this->cachedSettings = null;
+        $this->configurationApplied = false;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mailSettingsPayloadFromDatabase(): array
+    {
+        $settings = $this->mailSettingsRepository->getMailSettings();
+
+        return [
+            'mode' => $settings->mode,
+            'preset' => $settings->preset,
+            'host' => $settings->host,
+            'port' => $settings->port,
+            'scheme' => $settings->scheme,
+            'username' => $settings->username,
+            'password' => $settings->password,
+            'fromAddress' => $settings->fromAddress,
+            'fromName' => $settings->fromName,
+            'requireEmailVerification' => $settings->requireEmailVerification,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function mailSettingsFromPayload(array $payload): MailSettingsData
+    {
+        return new MailSettingsData(
+            mode: TypeCast::string($payload['mode'] ?? 'preset', 'preset'),
+            preset: TypeCast::nullableString($payload['preset'] ?? null),
+            host: TypeCast::nullableString($payload['host'] ?? null),
+            port: TypeCast::nullableInt($payload['port'] ?? null),
+            scheme: TypeCast::nullableString($payload['scheme'] ?? null),
+            username: TypeCast::nullableString($payload['username'] ?? null),
+            password: TypeCast::nullableString($payload['password'] ?? null),
+            fromAddress: TypeCast::string($payload['fromAddress'] ?? 'noreply@example.com'),
+            fromName: TypeCast::string($payload['fromName'] ?? 'Laravel'),
+            requireEmailVerification: TypeCast::bool($payload['requireEmailVerification'] ?? false),
+        );
     }
 
     private function resolveMailer(MailSettingsData $settings): ResolvedMailerConfig

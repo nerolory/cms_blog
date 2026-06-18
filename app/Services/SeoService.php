@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTO\HttpCacheContext;
+use App\DTO\PostListEngagementItem;
 use App\DTO\SeoData;
 use App\DTO\SeoMetaData;
 use App\Enums\PostStatus;
@@ -16,6 +17,7 @@ use App\Services\Contracts\SeoServiceContract;
 use App\Support\Cache\CacheVersionManager;
 use App\Support\TypeCast;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -152,12 +154,18 @@ class SeoService implements SeoServiceContract
 
      * @return HttpCacheContext
      */
-    public function httpCacheContextForPost(Post $post, ?User $viewer, int $viewsCount = 0): HttpCacheContext
-    {
+    public function httpCacheContextForPost(
+        Post $post,
+        ?User $viewer,
+        int $viewsCount = 0,
+        string $engagementVersion = '0',
+        int $totalVisibleComments = 0,
+    ): HttpCacheContext {
         $lastModified = $post->updated_at ?? now();
         $viewerKey = $viewer !== null ? (string) $viewer->id : 'guest';
-        $etag = $this->buildEtag([$this->cacheVersions->get(CacheVersionManager::POSTS), 'post', (string) $post->id,
-            (string) $lastModified->getTimestamp(), $viewerKey, (string) $viewsCount]);
+        $etag = $this->buildEtag([$this->cacheVersions->current(), $this->cacheVersions->get(CacheVersionManager::POSTS),
+            'post-v3', (string) $post->id, (string) $lastModified->getTimestamp(), $viewerKey,
+            (string) $viewsCount, $engagementVersion, (string) $totalVisibleComments]);
 
         return new HttpCacheContext(lastModified: $lastModified, etag: $etag,
             cacheControl: 'public, max-age=60, must-revalidate', robotsTag: $this->resolveRobots($post));
@@ -169,15 +177,19 @@ class SeoService implements SeoServiceContract
      * @param  LengthAwarePaginator<int, Post>  $posts
      * @return HttpCacheContext
      */
-    public function httpCacheContextForListing(LengthAwarePaginator $posts, ?User $viewer): HttpCacheContext
-    {
+    public function httpCacheContextForListing(
+        LengthAwarePaginator $posts,
+        ?User $viewer,
+        ?Collection $listingEngagement = null,
+    ): HttpCacheContext {
         $viewerKey = $viewer !== null ? (string) $viewer->id : 'guest';
         $latest = $posts->getCollection()->max(fn (Post $post): int => ($post->updated_at ?? now())
             ->getTimestamp()) ?? now()->getTimestamp();
         $lastModified = (new \DateTimeImmutable)->setTimestamp((int) $latest);
-        $etag = $this->buildEtag([$this->cacheVersions->get(CacheVersionManager::POSTS), 'listing',
-            (string) $posts->currentPage(), (string) $posts->total(), (string) $lastModified->getTimestamp(),
-            $viewerKey]);
+        $viewsFingerprint = $this->buildListingViewsFingerprint($listingEngagement);
+        $etag = $this->buildEtag([$this->cacheVersions->current(), $this->cacheVersions->get(CacheVersionManager::POSTS),
+            'listing-v4', (string) $posts->currentPage(), (string) $posts->total(),
+            (string) $lastModified->getTimestamp(), $viewerKey, $viewsFingerprint]);
         $repositoryTimestamp = $this->seoRepository->getLatestPublicListingTimestamp();
         if ($repositoryTimestamp !== null && $repositoryTimestamp->getTimestamp() > $lastModified->getTimestamp()) {
             $lastModified = $repositoryTimestamp;
@@ -261,6 +273,21 @@ class SeoService implements SeoServiceContract
         $maxAge = TypeCast::int(config('seo.cache.max_age', 3600), 3600);
 
         return 'public, max-age='.$maxAge.', must-revalidate';
+    }
+
+    /**
+     * @param  Collection<int, PostListEngagementItem>|null  $listingEngagement
+     */
+    private function buildListingViewsFingerprint(?Collection $listingEngagement): string
+    {
+        if ($listingEngagement === null || $listingEngagement->isEmpty()) {
+            return '';
+        }
+
+        return $listingEngagement
+            ->sortKeys()
+            ->map(static fn (PostListEngagementItem $item, mixed $postId): string => TypeCast::int($postId).':'.$item->viewsCount)
+            ->implode(',');
     }
 
     private function plainTextFromHtml(string $html): string

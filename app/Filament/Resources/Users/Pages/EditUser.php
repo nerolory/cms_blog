@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Filament\Concerns\EnsuresUserHasRole;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -12,7 +13,14 @@ use Filament\Resources\Pages\EditRecord;
  */
 class EditUser extends EditRecord
 {
+    use EnsuresUserHasRole;
+
     protected static string $resource = UserResource::class;
+
+    protected function afterSave(): void
+    {
+        $this->ensureUserHasRole();
+    }
 
     /**
      * Возвращает header actions.

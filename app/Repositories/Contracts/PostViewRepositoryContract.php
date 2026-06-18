@@ -28,6 +28,14 @@ interface PostViewRepositoryContract
     public function getCount(int $postId): int;
 
     /**
+     * Счётчики просмотров для списка постов (БД + Redis).
+     *
+     * @param  list<int>  $postIds
+     * @return Collection<int, int>
+     */
+    public function getCountsForPosts(array $postIds): Collection;
+
+    /**
      * flush pending counts.
      */
     /**

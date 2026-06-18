@@ -9,10 +9,12 @@ use App\Models\Setting;
 use App\Models\SiteTemplate;
 use App\Models\SiteTemplateTheme;
 use App\Repositories\Contracts\SiteTemplateRepositoryContract;
+use App\Support\Database\SchemaInspector;
 use App\Support\Site\SiteTemplateSettingKey;
 use App\Support\TypeCast;
+use App\Support\Cache\ApplicationCacheKeys;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Репозиторий site template.
@@ -23,6 +25,15 @@ use Illuminate\Support\Facades\Schema;
  */
 class SiteTemplateRepository implements SiteTemplateRepositoryContract
 {
+    private const BUNDLE_CACHE_TTL_SECONDS = 3600;
+
+    private bool $activeTemplateIdResolved = false;
+
+    private ?int $cachedActiveTemplateId = null;
+
+    /** @var array<int, SiteTemplate|null> */
+    private array $templateByIdCache = [];
+
     public function __construct(protected SiteTemplate $siteTemplate, protected SiteTemplateTheme $siteTemplateTheme,
         protected Setting $setting) {}
 
@@ -34,7 +45,43 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
      */
     public function findById(int $id): ?SiteTemplate
     {
-        return $this->siteTemplate->newQuery()->with('themes')->find($id);
+        if (array_key_exists($id, $this->templateByIdCache)) {
+            return $this->templateByIdCache[$id];
+        }
+
+        return $this->templateByIdCache[$id] = $this->siteTemplate->newQuery()->with('themes')->find($id);
+    }
+
+    /**
+     * Возвращает активный шаблон с темами из межзапросного кэша.
+     */
+    public function findActiveTemplate(): ?SiteTemplate
+    {
+        /** @var ?array<string, mixed> $bundle */
+        $bundle = Cache::remember(ApplicationCacheKeys::SITE_ACTIVE_TEMPLATE_BUNDLE, self::BUNDLE_CACHE_TTL_SECONDS,
+            fn (): ?array => $this->loadActiveTemplateBundleFromDatabase());
+
+        if ($bundle === null) {
+            return null;
+        }
+
+        $template = $this->hydrateTemplateFromBundle($bundle);
+        $this->templateByIdCache[$template->id] = $template;
+        $this->activeTemplateIdResolved = true;
+        $this->cachedActiveTemplateId = $template->id;
+
+        return $template;
+    }
+
+    /**
+     * Сбрасывает кэш активного шаблона.
+     */
+    public function forgetActiveTemplateCache(): void
+    {
+        Cache::forget(ApplicationCacheKeys::SITE_ACTIVE_TEMPLATE_BUNDLE);
+        $this->templateByIdCache = [];
+        $this->activeTemplateIdResolved = false;
+        $this->cachedActiveTemplateId = null;
     }
 
     /**
@@ -104,6 +151,7 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
         if ($data->isDefault) {
             $this->clearDefaultExcept($template->id);
         }
+        $this->forgetActiveTemplateCache();
 
         return $template->load('themes');
     }
@@ -122,6 +170,7 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
         if ($data->isDefault) {
             $this->clearDefaultExcept($template->id);
         }
+        $this->forgetActiveTemplateCache();
 
         return $template->fresh(['themes']) ?? $template;
     }
@@ -132,6 +181,7 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
     public function delete(SiteTemplate $template): void
     {
         $template->deleteOrFail();
+        $this->forgetActiveTemplateCache();
     }
 
     /**
@@ -142,15 +192,13 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
      */
     public function getActiveTemplateId(): ?int
     {
-        if (! $this->settingsTableExists()) {
-            return null;
+        if ($this->activeTemplateIdResolved) {
+            return $this->cachedActiveTemplateId;
         }
-        $value = $this->setting->newQuery()->find(SiteTemplateSettingKey::ACTIVE_TEMPLATE_ID)?->value;
-        if ($value === null || $value === '') {
-            return null;
-        }
+        $template = $this->findActiveTemplate();
+        $this->activeTemplateIdResolved = true;
 
-        return TypeCast::int($value);
+        return $this->cachedActiveTemplateId = $template?->id;
     }
 
     /**
@@ -163,11 +211,13 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
         }
         if ($id === null) {
             $this->setting->newQuery()->where('key', SiteTemplateSettingKey::ACTIVE_TEMPLATE_ID)->delete();
+            $this->forgetActiveTemplateCache();
 
             return;
         }
         $this->setting->newQuery()->updateOrCreate(['key' => SiteTemplateSettingKey::ACTIVE_TEMPLATE_ID],
             ['value' => (string) $id]);
+        $this->forgetActiveTemplateCache();
     }
 
     /**
@@ -197,6 +247,12 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
      */
     public function findThemeBySlug(SiteTemplate $template, string $slug): ?SiteTemplateTheme
     {
+        if ($template->relationLoaded('themes')) {
+            $theme = $template->themes->firstWhere('slug', $slug);
+
+            return $theme instanceof SiteTemplateTheme ? $theme : null;
+        }
+
         return $this->siteTemplateTheme->newQuery()->where('site_template_id', $template->id)->where('slug',
             $slug)->first();
     }
@@ -228,6 +284,10 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
             return collect(UserTheme::values());
         }
 
+        if ($template->relationLoaded('themes')) {
+            return $template->themes->pluck('slug')->map(fn (mixed $slug): string => TypeCast::string($slug))->values();
+        }
+
         return $this->siteTemplateTheme->newQuery()->where('site_template_id', $template->id)->orderBy('id')
             ->pluck('slug')->map(fn (mixed $slug): string => TypeCast::string($slug))->values();
     }
@@ -247,6 +307,7 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
         if ($data->isDefault) {
             $this->clearDefaultThemeExcept($template->id, $theme->id);
         }
+        $this->forgetActiveTemplateCache();
 
         return $theme;
     }
@@ -265,6 +326,7 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
         if ($data->isDefault) {
             $this->clearDefaultThemeExcept($theme->site_template_id, $theme->id);
         }
+        $this->forgetActiveTemplateCache();
 
         return $theme->fresh() ?? $theme;
     }
@@ -275,6 +337,92 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
     public function deleteTheme(SiteTemplateTheme $theme): void
     {
         $theme->deleteOrFail();
+        $this->forgetActiveTemplateCache();
+    }
+
+    /**
+     * @return ?array<string, mixed>
+     */
+    private function loadActiveTemplateBundleFromDatabase(): ?array
+    {
+        if (! $this->templatesTableExists()) {
+            return null;
+        }
+        $template = null;
+        if ($this->settingsTableExists()) {
+            $value = $this->setting->newQuery()->find(SiteTemplateSettingKey::ACTIVE_TEMPLATE_ID)?->value;
+            if ($value !== null && $value !== '') {
+                $template = $this->siteTemplate->newQuery()->with('themes')->find(TypeCast::int($value));
+            }
+        }
+        $template ??= $this->siteTemplate->newQuery()->with('themes')->where('is_active', true)->first();
+        $template ??= $this->siteTemplate->newQuery()->with('themes')->where('is_default', true)->first();
+        if (! $template instanceof SiteTemplate) {
+            return null;
+        }
+
+        return $this->serializeTemplateBundle($template);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeTemplateBundle(SiteTemplate $template): array
+    {
+        return [
+            'id' => $template->id,
+            'slug' => $template->slug,
+            'name' => $template->name,
+            'view_prefix' => $template->view_prefix,
+            'is_active' => $template->is_active,
+            'is_default' => $template->is_default,
+            'themes' => $template->themes->map(static fn (SiteTemplateTheme $theme): array => [
+                'id' => $theme->id,
+                'site_template_id' => $theme->site_template_id,
+                'slug' => $theme->slug,
+                'name' => $theme->name,
+                'bootstrap_theme' => $theme->bootstrap_theme,
+                'body_class' => $theme->body_class,
+                'css_entry' => $theme->css_entry,
+                'is_default' => $theme->is_default,
+            ])->values()->all(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $bundle
+     */
+    private function hydrateTemplateFromBundle(array $bundle): SiteTemplate
+    {
+        $template = new SiteTemplate([
+            'slug' => TypeCast::string($bundle['slug'] ?? ''),
+            'name' => TypeCast::string($bundle['name'] ?? ''),
+            'view_prefix' => TypeCast::string($bundle['view_prefix'] ?? 'themes.default'),
+            'is_active' => TypeCast::bool($bundle['is_active'] ?? false),
+            'is_default' => TypeCast::bool($bundle['is_default'] ?? false),
+        ]);
+        $template->id = TypeCast::int($bundle['id'] ?? 0);
+        $template->exists = true;
+        /** @var list<array<string, mixed>> $themes */
+        $themes = TypeCast::array($bundle['themes'] ?? []);
+        $themeModels = collect($themes)->map(function (array $row): SiteTemplateTheme {
+            $theme = new SiteTemplateTheme([
+                'site_template_id' => TypeCast::int($row['site_template_id'] ?? 0),
+                'slug' => TypeCast::string($row['slug'] ?? ''),
+                'name' => TypeCast::string($row['name'] ?? ''),
+                'bootstrap_theme' => TypeCast::nullableString($row['bootstrap_theme'] ?? null),
+                'body_class' => TypeCast::nullableString($row['body_class'] ?? null),
+                'css_entry' => TypeCast::nullableString($row['css_entry'] ?? null),
+                'is_default' => TypeCast::bool($row['is_default'] ?? false),
+            ]);
+            $theme->id = TypeCast::int($row['id'] ?? 0);
+            $theme->exists = true;
+
+            return $theme;
+        });
+        $template->setRelation('themes', $themeModels);
+
+        return $template;
     }
 
     private function clearDefaultExcept(int $templateId): void
@@ -290,11 +438,11 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
 
     private function settingsTableExists(): bool
     {
-        return Schema::hasTable('settings');
+        return SchemaInspector::hasSettingsTable();
     }
 
     private function templatesTableExists(): bool
     {
-        return Schema::hasTable('site_templates');
+        return SchemaInspector::hasSiteTemplatesTable();
     }
 }

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreReactionRequest;
+use App\Http\Support\EngagementMutationResponder;
 use App\Models\User;
 use App\Services\Contracts\PostServiceContract;
 use App\Services\Contracts\ReactionServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -16,22 +18,24 @@ use Illuminate\Http\RedirectResponse;
  */
 class ReactionController extends Controller
 {
-    public function __construct(protected ReactionServiceContract $reactionService,
-        protected PostServiceContract $postService) {}
+    public function __construct(
+        protected ReactionServiceContract $reactionService,
+        protected PostServiceContract $postService,
+        protected EngagementMutationResponder $engagementResponder,
+    ) {}
 
     /**
      * store.
-
      *
-     * @return RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
-    public function store(StoreReactionRequest $request, string $postSlug): RedirectResponse
+    public function store(StoreReactionRequest $request, string $postSlug): JsonResponse|RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
         $post = $this->postService->getVisiblePostBySlug($postSlug, $user);
         $this->reactionService->toggle($request->toDto($post, $user));
 
-        return back();
+        return $this->engagementResponder->respond($request, $post, $user);
     }
 }

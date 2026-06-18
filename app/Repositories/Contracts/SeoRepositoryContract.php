@@ -36,4 +36,9 @@ interface SeoRepositoryContract
      * @return ?DateTimeInterface
      */
     public function getLatestPublicListingTimestamp(): ?DateTimeInterface;
+
+    /**
+     * Сбрасывает кэш timestamp публичного листинга.
+     */
+    public function forgetListingTimestampCache(): void;
 }

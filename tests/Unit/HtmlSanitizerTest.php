@@ -165,4 +165,10 @@ class PostThemeTest extends TestCase
         $this->assertSame(50, PostTheme::normalizeOpacity(10));
         $this->assertSame(100, PostTheme::normalizeOpacity(150));
     }
+
+    public function test_contrasting_text_opposes_surface_brightness(): void
+    {
+        $this->assertSame('#1a1a1a', PostTheme::contrastingText('#ffffff'));
+        $this->assertSame('#f5f5f5', PostTheme::contrastingText('#1a1a1a'));
+    }
 }

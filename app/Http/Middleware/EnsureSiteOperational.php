@@ -29,10 +29,14 @@ class EnsureSiteOperational
         if ($this->shouldSkip($request)) {
             return $next($request);
         }
-        if ($this->siteOperational->isCriticalOperational()) {
+        $criticalOk = $this->siteOperational->getCachedCriticalOk();
+        if ($criticalOk === null) {
+            $criticalOk = $this->siteOperational->isCriticalOperational();
+        }
+        if ($criticalOk) {
             return $next($request);
         }
-        if ($this->siteOperational->canBypassMaintenance($request)) {
+        if ($this->siteOperational->canBypassMaintenance($request) || $this->isFilamentLivewireRequest($request)) {
             return $next($request);
         }
         if ($request->expectsJson()) {
@@ -45,5 +49,24 @@ class EnsureSiteOperational
     private function shouldSkip(Request $request): bool
     {
         return $request->routeIs('health') || $request->is('up') || $request->is('health');
+    }
+
+    /**
+     * Livewire POST идёт на /livewire/*, не под /admin — пропускаем для owner/admin с Filament.
+     */
+    private function isFilamentLivewireRequest(Request $request): bool
+    {
+        if (! $request->is('livewire/*')) {
+            return false;
+        }
+
+        $user = $request->user();
+        if ($user === null || ! ($user->hasRole('owner') || $user->hasRole('admin'))) {
+            return false;
+        }
+
+        $referer = (string) $request->headers->get('referer', '');
+
+        return str_contains($referer, '/admin');
     }
 }

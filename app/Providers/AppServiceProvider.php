@@ -13,6 +13,7 @@ use App\Presenters\PostPresenterFactory;
 use App\Presenters\UserPresenterFactory;
 use App\Repositories\Contracts\FileRepositoryContract;
 use App\Repositories\Contracts\MailSettingsRepositoryContract;
+use App\Repositories\Contracts\SiteSettingsRepositoryContract;
 use App\Repositories\Contracts\PermissionRepositoryContract;
 use App\Repositories\Contracts\PostModerationLogRepositoryContract;
 use App\Repositories\Contracts\PostPreviewCacheRepositoryContract;
@@ -24,6 +25,7 @@ use App\Repositories\Contracts\SiteTemplateRepositoryContract;
 use App\Repositories\Contracts\UserRepositoryContract;
 use App\Repositories\FileRepository;
 use App\Repositories\MailSettingsRepository;
+use App\Repositories\SiteSettingsRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\PostModerationLogRepository;
 use App\Repositories\PostPreviewCacheRepository;
@@ -35,6 +37,7 @@ use App\Repositories\SiteTemplateRepository;
 use App\Repositories\UserRepository;
 use App\Services\Contracts\LocaleServiceContract;
 use App\Services\Contracts\MailSettingsServiceContract;
+use App\Services\Contracts\SiteSettingsServiceContract;
 use App\Services\Contracts\PostContentImageServiceContract;
 use App\Services\Contracts\PostPreviewServiceContract;
 use App\Services\Contracts\PostServiceContract;
@@ -46,6 +49,7 @@ use App\Services\Contracts\StoredImageOptimizationServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\LocaleService;
 use App\Services\MailSettingsService;
+use App\Services\SiteSettingsService;
 use App\Services\Post\PostMutationPipeline;
 use App\Services\PostContentImageService;
 use App\Services\PostPreviewService;
@@ -64,7 +68,6 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -78,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(VisibilityChecker::class);
+        $this->app->bind(StoredImageOptimizationServiceContract::class, StoredImageOptimizationService::class);
         $this->app->singleton(PostMutationPipeline::class);
         $this->app->singleton(PostPresenterFactory::class);
         $this->app->singleton(UserPresenterFactory::class);
@@ -97,12 +101,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FileRepositoryContract::class, FileRepository::class);
         $this->app->bind(LocaleServiceContract::class, LocaleService::class);
         $this->app->bind(PostContentImageServiceContract::class, PostContentImageService::class);
-        $this->app->bind(StoredImageOptimizationServiceContract::class, StoredImageOptimizationService::class);
         $this->app->bind(UserServiceContract::class, UserService::class);
         $this->app->bind(MailSettingsRepositoryContract::class, MailSettingsRepository::class);
-        $this->app->bind(MailSettingsServiceContract::class, MailSettingsService::class);
-        $this->app->bind(SiteTemplateRepositoryContract::class, SiteTemplateRepository::class);
-        $this->app->bind(SiteTemplateServiceContract::class, SiteTemplateService::class);
+        $this->app->singleton(MailSettingsServiceContract::class, MailSettingsService::class);
+        $this->app->bind(SiteSettingsRepositoryContract::class, SiteSettingsRepository::class);
+        $this->app->singleton(SiteSettingsServiceContract::class, SiteSettingsService::class);
+        $this->app->singleton(SiteTemplateRepositoryContract::class, SiteTemplateRepository::class);
+        $this->app->singleton(SiteTemplateServiceContract::class, SiteTemplateService::class);
     }
 
     /**
@@ -118,10 +123,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(PostUpdated::class, RecordPostUpdatedListener::class);
         Event::listen(PostPublished::class, RecordPostPublishedListener::class);
         Event::listen([PostPublished::class, PostUpdated::class], QueuePostSearchIndexListener::class);
-        if ($this->app->runningUnitTests() || ! Schema::hasTable('settings')) {
-            return;
-        }
-        $this->app->make(MailSettingsServiceContract::class)->applyConfiguration();
+        Event::listen([PostPublished::class, PostUpdated::class], \App\Listeners\InvalidatePublicListingCacheListener::class);
     }
 
     private function configureRateLimiting(): void

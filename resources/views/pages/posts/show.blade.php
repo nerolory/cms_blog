@@ -24,8 +24,12 @@
             class="small text-muted text-decoration-none">{{ __('posts.web.back_to_list') }}</a>
     </div>
 
-    <article class="post-article card shadow-sm @if ($presenter->hasCustomTheme() || $presenter->hasBackgroundImage()) post-article--themed @endif"
-        @if ($presenter->hasCustomTheme() || $presenter->hasBackgroundImage()) style="{{ $presenter->themeStyleString() }}" @endif>
+    <article @class([
+        'post-article card shadow-sm',
+        'post-article--themed' => $presenter->hasCustomTheme(),
+        'post-article--has-bg' => $presenter->hasBackgroundImage(),
+    ])
+        @if ($presenter->hasCustomTheme()) style="{{ $presenter->themeStyleString() }}" @endif>
         @if ($presenter->hasFeaturedImage())
             <img src="{{ $presenter->featuredImageUrl() }}" alt="{{ $post->title }}"
                 class="post-article__featured img-fluid w-100">
@@ -53,10 +57,11 @@
 
     @unless ($isPreview ?? false)
         <x-post.ai-insights :insights="$aiInsights" :post="$post" />
-        <x-post.engagement :engagement="$engagement" :post="$post" :seo="$seo" :reading-minutes="$readingMinutes" />
+        <x-post.engagement :engagement="$engagement" :post="$post" :seo="$seo" :reading-minutes="$readingMinutes"
+            :engagement-version="$engagementVersion" />
     @endunless
 @endsection
 
-@push('scripts')
+@pushOnce('scripts')
     @vite('resources/js/post-body-code.js')
-@endpush
+@endPushOnce

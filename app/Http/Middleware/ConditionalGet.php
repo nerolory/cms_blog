@@ -8,9 +8,10 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Applies conditional GET headers (ETag, Last-Modified, Cache-Control) and short-circuits 304 responses.
- */
+    /**
+     * Applies conditional GET headers (ETag, Last-Modified, Cache-Control) and short-circuits 304 responses.
+     * Для авторизованных пользователей не применяется: шапка и баланс токенов персональные.
+     */
 class ConditionalGet
 {
     /**
@@ -22,6 +23,9 @@ class ConditionalGet
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
+        if ($request->user() !== null) {
+            return $response;
+        }
         $context = $request->attributes->get(HttpCacheRequestAttributes::CACHE_CONTEXT);
         if (! $context instanceof HttpCacheContext || ! $response->isSuccessful()) {
             return $response;

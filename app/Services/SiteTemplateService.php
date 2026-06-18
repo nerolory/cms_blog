@@ -35,20 +35,9 @@ class SiteTemplateService implements SiteTemplateServiceContract
         if ($this->resolvedActiveTemplate instanceof SiteTemplate) {
             return $this->resolvedActiveTemplate;
         }
-        $activeId = $this->siteTemplates->getActiveTemplateId();
-        if ($activeId !== null) {
-            $template = $this->siteTemplates->findById($activeId);
-            if ($template instanceof SiteTemplate) {
-                return $this->resolvedActiveTemplate = $template;
-            }
-        }
-        $activeByFlag = $this->siteTemplates->getActiveByFlag();
-        if ($activeByFlag instanceof SiteTemplate) {
-            return $this->resolvedActiveTemplate = $activeByFlag;
-        }
-        $default = $this->siteTemplates->getDefault();
-        if ($default instanceof SiteTemplate) {
-            return $this->resolvedActiveTemplate = $default;
+        $template = $this->siteTemplates->findActiveTemplate();
+        if ($template instanceof SiteTemplate) {
+            return $this->resolvedActiveTemplate = $template;
         }
 
         return $this->resolvedActiveTemplate = $this->fallbackTemplate();
@@ -260,6 +249,12 @@ class SiteTemplateService implements SiteTemplateServiceContract
         $template = $this->resolveActiveTemplate();
         if ($template->id <= 0) {
             return null;
+        }
+
+        if ($template->relationLoaded('themes')) {
+            $record = $template->themes->firstWhere('slug', $theme->value);
+
+            return $record instanceof SiteTemplateTheme ? $record : null;
         }
 
         return $this->siteTemplates->findThemeBySlug($template, $theme->value);

@@ -10,11 +10,11 @@ use App\Models\AiAnalysisOrder;
 use App\Models\Post;
 use App\Models\User;
 use App\Repositories\Contracts\AiAnalysisOrderRepositoryContract;
-use App\Repositories\Contracts\AiSettingsRepositoryContract;
 use App\Repositories\Contracts\AiToolResultRepositoryContract;
 use App\Repositories\Contracts\CommentRepositoryContract;
 use App\Repositories\Contracts\UserTokenWalletRepositoryContract;
 use App\Services\Contracts\AiAnalysisOrderServiceContract;
+use App\Services\Contracts\AiSettingsServiceContract;
 use App\Services\Contracts\TokenWalletServiceContract;
 
 /**
@@ -26,7 +26,7 @@ use App\Services\Contracts\TokenWalletServiceContract;
  *
  * @property-read AiAnalysisOrderRepositoryContract $orders
  * @property-read CommentRepositoryContract $comments
- * @property-read AiSettingsRepositoryContract $settings
+ * @property-read AiSettingsServiceContract $settings
  * @property-read AiToolResultRepositoryContract $results
  * @property-read UserTokenWalletRepositoryContract $wallets
  * @property-read TokenWalletServiceContract $tokenWallet
@@ -34,7 +34,7 @@ use App\Services\Contracts\TokenWalletServiceContract;
 class AiAnalysisOrderService implements AiAnalysisOrderServiceContract
 {
     public function __construct(protected AiAnalysisOrderRepositoryContract $orders,
-        protected CommentRepositoryContract $comments, protected AiSettingsRepositoryContract $settings,
+        protected CommentRepositoryContract $comments, protected AiSettingsServiceContract $settings,
         protected AiToolResultRepositoryContract $results, protected UserTokenWalletRepositoryContract $wallets,
         protected TokenWalletServiceContract $tokenWallet) {}
 
@@ -114,7 +114,7 @@ class AiAnalysisOrderService implements AiAnalysisOrderServiceContract
      */
     public function calculateTokensRequired(int $commentCount): int
     {
-        return $this->settings->getSettings()->tokensRequiredForComments($commentCount);
+        return $this->settings->settings()->tokensRequiredForComments($commentCount);
     }
 
     /**
@@ -126,7 +126,7 @@ class AiAnalysisOrderService implements AiAnalysisOrderServiceContract
      */
     public function canAutoAnalyze(int $commentCount): bool
     {
-        $settings = $this->settings->getSettings();
+        $settings = $this->settings->settings();
 
         return $commentCount >= $settings->autoAnalysisCommentThreshold;
     }
@@ -166,7 +166,7 @@ class AiAnalysisOrderService implements AiAnalysisOrderServiceContract
         $summary = __('ai.orders.demo_summary', ['count' => $order->comment_count, 'title' => $post->title]);
         $this->results->upsertForPost($post, AiToolCode::CommentSummary, AiResultStatus::Completed, $summary,
             __('ai.orders.demo_detail'));
-        $settings = $this->settings->getSettings();
+        $settings = $this->settings->settings();
 
         return $this->orders->markExecuted($order, $order->tokens_required, now()->addDays($settings->cooldownDays));
     }

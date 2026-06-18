@@ -75,13 +75,71 @@ class PhasesF9ToF12Test extends TestCase
         $this->actingAs($commenter)->post(route('posts.comments.store', $post), ['body' => 'Reply level 1',
             'parent_id' => $root->id])->assertRedirect();
         $reply = PostComment::query()->where('parent_id', $root->id)->firstOrFail();
-        $this->actingAs($commenter)->post(route('posts.comments.store', $post), ['body' => 'Should fail depth 3',
-            'parent_id' => $reply->id])->assertSessionHasErrors();
+        $this->actingAs($commenter)->post(route('posts.comments.store', $post), ['body' => 'Reply level 2',
+            'parent_id' => $reply->id])->assertRedirect();
+        $nested = PostComment::query()->where('reply_to_id', $reply->id)->firstOrFail();
+        $this->assertSame($root->id, $nested->parent_id);
         $this->actingAs($commenter)->post(route('posts.reactions.store', $post),
             ['type' => ReactionType::Like->value])->assertRedirect();
         $this->actingAs($commenter)->post(route('posts.reactions.store', $post),
             ['type' => ReactionType::Like->value])->assertRedirect();
         $this->assertDatabaseMissing('post_reactions', ['post_id' => $post->id, 'user_id' => $commenter->id]);
+    }
+
+    /**
+     * Все ответы в ветке (включая вложенные) рендерятся с отступом.
+     */
+    public function test_thread_replies_render_indented_markup(): void
+    {
+        $author = $this->createAuthorUser();
+        $commenter = $this->createAuthorUser(['email' => 'thread-indent@example.com']);
+        $post = Post::factory()->for($author)->published()->create();
+        $this->actingAs($commenter)->post(route('posts.comments.store', $post), ['body' => 'Root'])->assertRedirect();
+        $root = PostComment::query()->where('post_id', $post->id)->whereNull('parent_id')->firstOrFail();
+        $this->actingAs($commenter)->post(route('posts.comments.store', $post), [
+            'body' => 'Reply 1',
+            'parent_id' => $root->id,
+        ])->assertRedirect();
+        $reply = PostComment::query()->where('parent_id', $root->id)->firstOrFail();
+        $this->actingAs($commenter)->post(route('posts.comments.store', $post), [
+            'body' => 'Reply 2',
+            'parent_id' => $reply->id,
+        ])->assertRedirect();
+
+        $response = $this->actingAs($commenter)->getJson(route('posts.comments.thread', [$post, $root->id]));
+        $response->assertOk();
+        $html = (string) $response->json('html');
+        $this->assertSame(2, substr_count($html, 'post-comment--indented'));
+        $this->assertStringContainsString('Reply 1', $html);
+        $this->assertStringContainsString('Reply 2', $html);
+    }
+
+    /**
+     * Два root-комментария в DOM — соседи в [data-comment-roots], не внутри [data-comment-replies].
+     */
+    public function test_two_root_comments_render_as_siblings_not_nested(): void
+    {
+        $author = $this->createAuthorUser();
+        $commenter = $this->createAuthorUser(['email' => 'siblings@example.com']);
+        $post = Post::factory()->for($author)->published()->create();
+        $this->actingAs($commenter)->post(route('posts.comments.store', $post), ['body' => 'Root A'])
+            ->assertRedirect();
+        $this->actingAs($commenter)->post(route('posts.comments.store', $post), ['body' => 'Root B'])
+            ->assertRedirect();
+
+        $response = $this->get(route('posts.show', $post));
+        $response->assertOk();
+        $html = (string) $response->getContent();
+        $this->assertSame(
+            1,
+            preg_match('/data-comment-roots[^>]*>(.*)<div[^>]*data-comment-roots-sentinel/s', $html, $rootsMatch),
+        );
+        $rootsInner = $rootsMatch[1];
+        $this->assertSame(2, substr_count($rootsInner, 'data-comment-thread'));
+        preg_match_all('/<div[^>]*data-comment-replies[^>]*>(.*?)<\/div>/s', $rootsInner, $replyBlocks);
+        foreach ($replyBlocks[1] as $repliesInner) {
+            $this->assertStringNotContainsString('data-comment-thread', $repliesInner);
+        }
     }
 
     /**
@@ -95,7 +153,7 @@ class PhasesF9ToF12Test extends TestCase
         $response = $this->get(route('posts.show', $post));
         $response->assertOk();
         $response->assertSee('Section');
-        $response->assertSee(__('engagement.comments.title'));
+        $response->assertSee(__('engagement.comment.title'));
     }
 
     /**

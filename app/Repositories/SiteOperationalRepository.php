@@ -76,7 +76,11 @@ class SiteOperationalRepository implements SiteOperationalRepositoryContract
         $started = microtime(true);
         $path = 'health/'.Str::uuid()->toString().'.txt';
         try {
-            Storage::disk('local')->put($path, 'ok');
+            $written = Storage::disk('local')->put($path, 'ok');
+            if ($written !== true) {
+                return new OperationalProbeData(ok: false, message: 'Storage write failed.',
+                    latencyMs: $this->elapsedMs($started));
+            }
             $contents = Storage::disk('local')->get($path);
             Storage::disk('local')->delete($path);
 

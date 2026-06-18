@@ -47,6 +47,14 @@ interface ReactionRepositoryContract
     public function countsForPost(int $postId): Collection;
 
     /**
+     * Счётчики реакций для списка постов (только count &gt; 0).
+     *
+     * @param  list<int>  $postIds
+     * @return Collection<int, Collection<string, int>>
+     */
+    public function countsForPosts(array $postIds): Collection;
+
+    /**
      * user reaction.
      *
      * @param  int  $postId  id

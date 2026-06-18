@@ -102,11 +102,20 @@ final readonly class PostPresenter
             $styles['--post-accent'] = $this->post->theme_accent_color;
         }
         $styles['--post-content-opacity'] = (string) (PostTheme::normalizeOpacity($this->post->content_opacity) / 100);
+        $panelTint = null;
         if ($this->hasBackgroundImage()) {
             $backgroundUrl = $this->backgroundImageUrl();
             if ($backgroundUrl !== null) {
                 $styles['background-image'] = 'url("'.$backgroundUrl.'")';
             }
+            $panelTint = PostTheme::contrastSurface($this->post->theme_primary_color);
+            $styles['--post-panel-tint'] = $panelTint;
+        } elseif ($this->post->theme_primary_color !== null) {
+            $panelTint = PostTheme::contrastSurface($this->post->theme_primary_color);
+            $styles['--post-panel-tint'] = $panelTint;
+        }
+        if ($panelTint !== null) {
+            $styles['--post-panel-text'] = PostTheme::contrastingText($panelTint);
         }
 
         return $styles;

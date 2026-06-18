@@ -62,6 +62,20 @@ class ConditionalGetTest extends TestCase
     }
 
     /**
+     * Авторизованным пользователям не отдаётся 304 — персональная шапка.
+     */
+    public function test_authenticated_post_show_never_returns_304(): void
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->published()->for($user)->create(['visibility' => PostVisibility::Guest->value]);
+        $first = $this->actingAs($user)->get(route('posts.show', $post));
+        $first->assertOk();
+        $this->assertNull($first->headers->get('ETag'));
+        $second = $this->actingAs($user)->get(route('posts.show', $post), ['If-None-Match' => '"stale-etag"']);
+        $second->assertOk();
+    }
+
+    /**
      * test posts index returns cache headers.
      */
     public function test_posts_index_returns_cache_headers(): void

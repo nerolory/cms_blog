@@ -15,6 +15,7 @@ use App\Services\Contracts\UserServiceContract;
 use App\Support\Auth\AuthAttemptDiagnostics;
 use App\Support\Cache\CacheVersionManager;
 use App\Support\Media\ImageProcessor;
+use App\Support\Rbac\DefaultUserRoleAssigner;
 use App\Support\Rbac\RoleProvisioner;
 use App\Support\TypeCast;
 use Illuminate\Http\UploadedFile;
@@ -40,7 +41,8 @@ class UserService implements UserServiceContract
     public function __construct(protected UserRepositoryContract $userRepository,
         protected FileRepositoryContract $fileRepository, protected MailSettingsServiceContract $mailSettingsService,
         protected RoleProvisioner $roleProvisioner, protected AuthAttemptDiagnostics $authAttemptDiagnostics,
-        protected ImageProcessor $imageProcessor, protected CacheVersionManager $cacheVersions) {}
+        protected ImageProcessor $imageProcessor, protected CacheVersionManager $cacheVersions,
+        protected DefaultUserRoleAssigner $defaultUserRoleAssigner) {}
 
     /**
      * authenticate.
@@ -72,8 +74,7 @@ class UserService implements UserServiceContract
             throw ValidationException::withMessages(['email' => [__('auth.validation.email_taken')]]);
         }
         $user = $this->userRepository->createFromRegister($data);
-        $this->roleProvisioner->ensureUserRole();
-        $this->userRepository->assignRole($user, 'user');
+        $this->defaultUserRoleAssigner->assignIfMissing($user);
 
         return $user;
     }

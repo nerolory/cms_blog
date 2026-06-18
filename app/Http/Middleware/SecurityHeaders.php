@@ -44,23 +44,45 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', $directive);
         }
         if (config('security.csp.enabled', false) && is_string($nonce)) {
-            $response->headers->set('Content-Security-Policy', $this->buildCspDirectives($nonce));
+            if ($response->getStatusCode() !== Response::HTTP_NOT_MODIFIED
+                && $response->getStatusCode() < Response::HTTP_INTERNAL_SERVER_ERROR) {
+                $response->headers->set(
+                    'Content-Security-Policy',
+                    $this->buildCspDirectives($nonce, $this->isPanelRequest($request)),
+                );
+            }
         }
 
         return $response;
     }
 
-    private function buildCspDirectives(string $nonce): string
+    /**
+     * Filament/Livewire/Alpine: отдельная политика с unsafe-eval (требование Alpine.js).
+     */
+    private function isPanelRequest(Request $request): bool
+    {
+        return $request->is('admin', 'admin/*', 'livewire/*', 'filament/*');
+    }
+
+    private function buildCspDirectives(string $nonce, bool $isPanel): string
     {
         $nonceDirective = "'nonce-{$nonce}'";
+        $scriptSrc = implode(' ', array_filter([
+            "'self'",
+            $nonceDirective,
+            'https://cdn.jsdelivr.net',
+            $isPanel ? "'unsafe-eval'" : null,
+        ]));
+        $connectSrc = "'self'".($isPanel ? ' ws: wss:' : '');
 
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' {$nonceDirective} https://cdn.jsdelivr.net",
+            "script-src {$scriptSrc}",
             "style-src 'self' {$nonceDirective} https://cdn.jsdelivr.net",
+            "style-src-attr 'unsafe-inline'",
             "img-src 'self' data: blob:",
             "font-src 'self' data:",
-            "connect-src 'self'",
+            "connect-src {$connectSrc}",
             "frame-ancestors 'self'",
         ]);
     }

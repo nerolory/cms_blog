@@ -17,7 +17,7 @@ return [
     'panel_access_admin' => 'Доступ к панели администратора',
     'settings_manage' => 'Управление настройками системы',
     'users_activate' => 'Активация пользователей',
-    'site_health' => 'Site Health',
+    'site_health' => 'Состояние сайта',
     'ai_orders_request' => 'Заказ AI-анализа',
     'ai_orders_manage' => 'Модерация заказов AI',
     'tokens_purchase' => 'Покупка токенов',

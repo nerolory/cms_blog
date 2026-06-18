@@ -16,7 +16,8 @@ readonly class PostShowViewModel
 {
     public function __construct(public Post $post, public SeoMetaData $seo, public PostEngagementData $engagement,
         public PostAiInsights $aiInsights, public bool $canUpdatePost, public bool $canOpenAdmin,
-        public PostShowContentData $content, public HttpCacheContext $httpCacheContext) {}
+        public PostShowContentData $content, public HttpCacheContext $httpCacheContext,
+        public string $engagementVersion = '0') {}
 
     /**
      * Переменные для view pages.posts.show.
@@ -27,6 +28,7 @@ readonly class PostShowViewModel
     {
         return ['post' => $this->post, 'seo' => $this->seo, 'engagement' => $this->engagement,
             'aiInsights' => $this->aiInsights, 'canUpdatePost' => $this->canUpdatePost,
-            'canOpenAdmin' => $this->canOpenAdmin] + $this->content->toViewVariables();
+            'canOpenAdmin' => $this->canOpenAdmin, 'engagementVersion' => $this->engagementVersion]
+            + $this->content->toViewVariables();
     }
 }

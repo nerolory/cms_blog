@@ -1,6 +1,9 @@
 # --- OS & editors ---
 .DS_Store
 Thumbs.db
+# Windows: accidental `> nul` in repo root creates a file named NUL
+/NUL
+/nul
 *.log
 .phpactor.json
 /.codex
@@ -57,6 +60,18 @@ ai-service/build/
 /reports/*.txt
 /reports/*.md
 !/reports/.gitignore
+/phpstan-*.txt
+/phpstan-out.txt
+/phpstan-errors.txt
+/phpstan-raw.txt
+/test-results/
+
+# --- Local scratch / debug (never commit) ---
+/test.php
+/Untitled
+/scripts/probe-*.php
+/scripts/check-post-comments.php
+/scripts/list-post-comments.php
 
 # --- Internal documentation (dev/agent only; excluded from release) ---
 /docs/AGENT_HANDOFF.md
@@ -71,3 +86,4 @@ ai-service/build/
 /docs/AUDIT_CHECKLIST.md
 /docs/AUDIT_FINAL_REPORT.md
 /docs/PROJECT_CLOSURE.md
+/docs/REFACTORING_PLAN.md
