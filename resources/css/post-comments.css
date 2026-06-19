@@ -27,14 +27,14 @@
     border-top: 1px solid var(--bs-border-color);
 }
 
-.post-comment-thread__replies:not(.d-none) > .post-comment,
-.post-comment-thread__replies:not(.d-none) .post-comment--indented {
+.post-comment--indented {
     margin-left: 2.75rem;
     padding-left: 0.75rem;
     border-left: 2px solid var(--bs-border-color);
 }
 
-.post-comment--indented {
+.post-comment-thread__replies:not(.d-none) > .post-comment,
+.post-comment-thread__replies:not(.d-none) .post-comment--indented {
     margin-left: 2.75rem;
     padding-left: 0.75rem;
     border-left: 2px solid var(--bs-border-color);

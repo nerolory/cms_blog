@@ -52,7 +52,8 @@ class EnsureSiteOperational
     }
 
     /**
-     * Livewire POST идёт на /livewire/*, не под /admin — пропускаем для owner/admin с Filament.
+     * Livewire POST идёт на /livewire/*, не под /admin — пропускаем для owner/admin с
+     * Filament.
      */
     private function isFilamentLivewireRequest(Request $request): bool
     {

@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\PostComment;
 use App\Services\Contracts\ScheduledPublishServiceContract;
 use App\Services\Contracts\SiteHealthServiceContract;
+use App\Support\TypeCast;
 use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\RefreshDatabase;
 use Tests\Concerns\SeedsRoles;
@@ -108,14 +109,15 @@ class PhasesF9ToF12Test extends TestCase
 
         $response = $this->actingAs($commenter)->getJson(route('posts.comments.thread', [$post, $root->id]));
         $response->assertOk();
-        $html = (string) $response->json('html');
+        $html = TypeCast::string($response->json('html'));
         $this->assertSame(2, substr_count($html, 'post-comment--indented'));
         $this->assertStringContainsString('Reply 1', $html);
         $this->assertStringContainsString('Reply 2', $html);
     }
 
     /**
-     * Два root-комментария в DOM — соседи в [data-comment-roots], не внутри [data-comment-replies].
+     * Два root-комментария в DOM — соседи в [data-comment-roots], не внутри
+     * [data-comment-replies].
      */
     public function test_two_root_comments_render_as_siblings_not_nested(): void
     {
@@ -134,6 +136,9 @@ class PhasesF9ToF12Test extends TestCase
             1,
             preg_match('/data-comment-roots[^>]*>(.*)<div[^>]*data-comment-roots-sentinel/s', $html, $rootsMatch),
         );
+        if (! array_key_exists(1, $rootsMatch)) {
+            $this->fail('Expected comment roots inner HTML.');
+        }
         $rootsInner = $rootsMatch[1];
         $this->assertSame(2, substr_count($rootsInner, 'data-comment-thread'));
         preg_match_all('/<div[^>]*data-comment-replies[^>]*>(.*?)<\/div>/s', $rootsInner, $replyBlocks);

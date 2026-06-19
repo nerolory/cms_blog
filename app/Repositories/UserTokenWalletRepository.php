@@ -31,6 +31,9 @@ class UserTokenWalletRepository implements UserTokenWalletRepositoryContract
 
     /**
      * Находит or create for user.
+
+     *
+     * @return UserTokenWallet
      */
     public function findOrCreateForUser(User $user): UserTokenWallet
     {
@@ -39,6 +42,9 @@ class UserTokenWalletRepository implements UserTokenWalletRepositoryContract
 
     /**
      * Возвращает balance.
+
+     *
+     * @return int
      */
     public function getBalance(User $user): int
     {
@@ -58,6 +64,9 @@ class UserTokenWalletRepository implements UserTokenWalletRepositoryContract
 
     /**
      * credit.
+
+     *
+     * @return TokenTransaction
      */
     public function credit(User $user, int $amount, TokenGrantData $grant): TokenTransaction
     {
@@ -72,6 +81,9 @@ class UserTokenWalletRepository implements UserTokenWalletRepositoryContract
 
     /**
      * debit.
+
+     *
+     * @return TokenTransaction
      */
     public function debit(User $user, int $amount, string $referenceType, int $referenceId,
         ?string $note = null): TokenTransaction
@@ -87,6 +99,9 @@ class UserTokenWalletRepository implements UserTokenWalletRepositoryContract
 
     /**
      * purchase.
+
+     *
+     * @return TokenTransaction
      */
     public function purchase(User $user, TokenPackage $package, PaymentResultData $payment): TokenTransaction
     {

@@ -23,6 +23,9 @@ interface SiteTemplateRepositoryContract
 
     /**
      * Возвращает активный шаблон с темами (межзапросный кэш).
+
+     *
+     * @return ?SiteTemplate
      */
     public function findActiveTemplate(): ?SiteTemplate;
 

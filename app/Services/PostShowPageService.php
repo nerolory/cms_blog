@@ -20,6 +20,8 @@ use Filament\Facades\Filament;
  * @property-read PostViewServiceContract $postViewService
  * @property-read SeoServiceContract $seoService
  * @property-read AiInsightServiceContract $aiInsightService
+
+ * @property-read PostEngagementVersionServiceContract $engagementVersions
  */
 class PostShowPageService implements PostShowPageServiceContract
 {
@@ -33,6 +35,9 @@ class PostShowPageService implements PostShowPageServiceContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return PostShowViewModel
      */
     public function build(string $postSlug, ?User $viewer): PostShowViewModel
     {

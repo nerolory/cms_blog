@@ -30,10 +30,14 @@ class ReactionRepository implements ReactionRepositoryContract
 
     /**
      * upsert.
+
+     *
+     * @return PostReaction
      */
     public function upsert(ReactionData $data): PostReaction
     {
-        $reaction = $this->reaction->newQuery()->updateOrCreate(['post_id' => $data->postId, 'user_id' => $data->userId],
+        $reaction = $this->reaction->newQuery()->updateOrCreate(['post_id' => $data->postId,
+            'user_id' => $data->userId],
             ['type' => $data->type]);
         $this->refreshPostTotalsInRedis($data->postId);
         $this->rememberUserReactionInRedis($data->postId, $data->userId, $data->type);
@@ -43,6 +47,9 @@ class ReactionRepository implements ReactionRepositoryContract
 
     /**
      * remove.
+
+     *
+     * @return bool
      */
     public function remove(int $postId, int $userId): bool
     {
@@ -58,32 +65,42 @@ class ReactionRepository implements ReactionRepositoryContract
     /**
      * Возвращает счётчики реакций для поста.
      *
-     * @return Collection<int, int>
+     * @return Collection<string, int>
      */
     public function countsForPost(int $postId): Collection
     {
-        return $this->countsForPosts([$postId])->get($postId, collect());
+        /** @var Collection<string, int> $counts */
+        $counts = $this->countsForPosts(collect([$postId]))->get($postId, collect());
+
+        return $counts;
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @return Collection<int, Collection<string, int>>
      */
-    public function countsForPosts(array $postIds): Collection
+    public function countsForPosts(Collection $postIds): Collection
     {
-        if ($postIds === []) {
+        if ($postIds->isEmpty()) {
             return collect();
         }
+
+        $ids = array_values($postIds->all());
 
         $this->purgeLegacyCachesOnce();
 
         /** @var array<int, array<string, int>> $arrays */
-        $arrays = $this->resolveCountArraysForPosts($postIds);
+        $arrays = $this->resolveCountArraysForPosts($ids);
 
-        return $this->mapArraysToCollections($postIds, $arrays);
+        return $this->mapArraysToCollections($ids, $arrays);
     }
 
     /**
      * user reaction.
+
+     *
+     * @return ?string
      */
     public function userReaction(int $postId, int $userId): ?string
     {
@@ -142,10 +159,14 @@ class ReactionRepository implements ReactionRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return ReactionEngagementData
      */
     public function countsAndUserReactionForPost(int $postId, ?int $userId): ReactionEngagementData
     {
-        $aggregates = $this->countsForPosts([$postId])->get($postId, collect());
+        /** @var Collection<string, int> $aggregates */
+        $aggregates = $this->countsForPosts(collect([$postId]))->get($postId, collect());
         $counts = collect();
         foreach (ReactionType::all() as $type) {
             $counts->put($type->value, TypeCast::int($aggregates->get($type->value, 0)));
@@ -174,13 +195,13 @@ class ReactionRepository implements ReactionRepositoryContract
      */
     private function loadCountArraysFromDatabase(array $postIds): array
     {
-        $rows = $this->reaction->newQuery()->selectRaw('post_id, type, COUNT(*) as aggregate')->whereIn('post_id',
+        $rows = $this->reaction->newQuery()->selectRaw('post_id, type, COUNT(*) as reaction_count')->whereIn('post_id',
             $postIds)->groupBy('post_id', 'type')->get();
         $aggregatesByPost = [];
         foreach ($rows as $row) {
             $postId = TypeCast::int($row->post_id);
             $type = $row->type instanceof ReactionType ? $row->type->value : TypeCast::string($row->type);
-            $aggregatesByPost[$postId][$type] = TypeCast::int($row->aggregate);
+            $aggregatesByPost[$postId][$type] = TypeCast::int($row->getAttribute('reaction_count'));
         }
 
         $result = [];
@@ -209,7 +230,7 @@ class ReactionRepository implements ReactionRepositoryContract
         $missingIds = [];
         foreach ($postIds as $index => $postId) {
             $cached = $cachedTotals[$index] ?? false;
-            if ($cached === false || $cached === null || $cached === '') {
+            if ($cached === false || $cached === '') {
                 $missingIds[] = $postId;
             }
         }
@@ -263,7 +284,7 @@ class ReactionRepository implements ReactionRepositoryContract
     /**
      * @param  list<int>  $postIds
      * @param  array<int, array<string, int>>  $arrays
-     * @return Collection<int, Collection<int, int>>
+     * @return Collection<int, Collection<string, int>>
      */
     private function mapArraysToCollections(array $postIds, array $arrays): Collection
     {

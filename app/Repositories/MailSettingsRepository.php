@@ -5,9 +5,10 @@ namespace App\Repositories;
 use App\DTO\MailSettingsData;
 use App\Models\Setting;
 use App\Repositories\Contracts\MailSettingsRepositoryContract;
+use App\Services\Contracts\MailSettingsServiceContract;
+use App\Support\Database\SchemaInspector;
 use App\Support\Mail\MailSettingKey;
 use App\Support\TypeCast;
-use App\Support\Database\SchemaInspector;
 use Illuminate\Support\Facades\Crypt;
 
 /**
@@ -41,11 +42,13 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
     {
         if ($value === null) {
             $this->setting->newQuery()->where('key', $key)->delete();
+            $this->forgetMailSettingsServiceCache();
 
             return;
         }
         $storedValue = $this->isEncryptedKey($key) ? Crypt::encryptString($value) : $value;
         $this->setting->newQuery()->updateOrCreate(['key' => $key], ['value' => $storedValue]);
+        $this->forgetMailSettingsServiceCache();
     }
 
     /**
@@ -149,6 +152,7 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
     }
 
     /**
+     * @param  array<string, ?string>  $values
      * @param  array<string, mixed>  $defaults
      */
     private function readPortFromValues(array $values, array $defaults): ?int
@@ -188,5 +192,12 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
             fromName: TypeCast::string($defaults['from_name'] ?? 'Laravel'),
             requireEmailVerification: TypeCast::bool(config('mail-module.require_email_verification_default', false)),
         );
+    }
+
+    private function forgetMailSettingsServiceCache(): void
+    {
+        if (app()->bound(MailSettingsServiceContract::class)) {
+            app(MailSettingsServiceContract::class)->forgetSettingsCache();
+        }
     }
 }

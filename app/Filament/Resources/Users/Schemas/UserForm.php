@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\Role;
+use App\Support\TypeCast;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -33,7 +34,7 @@ class UserForm
             ->dehydrated(false), Select::make('roles')->label(__('admin.users.fields.roles'))
             ->relationship('roles', 'name')->multiple()->preload()->required()->minItems(1)
             ->default(fn (): array => Role::query()->where('name', 'user')->pluck('id')->map(
-                fn (mixed $id): int => (int) $id,
+                fn (mixed $id): int => TypeCast::int($id),
             )->all())->columnSpanFull()]);
     }
 }

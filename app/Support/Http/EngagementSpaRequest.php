@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
  */
 final class EngagementSpaRequest
 {
+    /**
+     * matches.
+     *
+     * @param  Request  $request
+     * @return bool
+     */
     public static function matches(Request $request): bool
     {
         return $request->expectsJson()

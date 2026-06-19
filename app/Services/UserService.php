@@ -35,6 +35,8 @@ use Illuminate\Validation\ValidationException;
  * @property-read AuthAttemptDiagnostics $authAttemptDiagnostics
  * @property-read ImageProcessor $imageProcessor
  * @property-read CacheVersionManager $cacheVersions
+
+ * @property-read DefaultUserRoleAssigner $defaultUserRoleAssigner
  */
 class UserService implements UserServiceContract
 {

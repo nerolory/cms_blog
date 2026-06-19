@@ -14,7 +14,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class LocalAvatarProvider implements AvatarProvider
 {
-    public function get(Model | Authenticatable $record): string
+    /**
+     * Возвращает .
+     *
+     * @param  Model|Authenticatable  $record
+     * @return string
+     */
+    public function get(Model|Authenticatable $record): string
     {
         $label = str(Filament::getNameForDefaultAvatar($record))
             ->trim()
@@ -22,7 +28,8 @@ final class LocalAvatarProvider implements AvatarProvider
             ->map(fn (string $segment): string => filled($segment) ? mb_substr($segment, 0, 1) : '')
             ->join(' ');
 
-        $background = Color::convertToHex(FilamentColor::getColor('gray')[950] ?? Color::Gray[950]);
+        $gray950 = FilamentColor::getColor('gray')[950] ?? Color::Gray[950];
+        $background = Color::convertToHex(is_string($gray950) ? $gray950 : (string) $gray950);
         $background = ltrim($background, '#');
         $svg = sprintf(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'

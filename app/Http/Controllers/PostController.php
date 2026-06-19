@@ -14,6 +14,7 @@ use App\Services\Contracts\PostViewServiceContract;
 use App\Services\Contracts\SeoServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Support\Http\HttpCacheRequestAttributes;
+use App\Support\TypeCast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,8 @@ use Illuminate\Http\Request;
  * @property-read SeoServiceContract $seoService
  * @property-read PostShowPageServiceContract $postShowPageService
  * @property-read PostVersionServiceContract $versionService
+
+ * @property-read PostViewServiceContract $postViewService
  */
 class PostController extends Controller
 {
@@ -46,7 +49,7 @@ class PostController extends Controller
         $user = auth()->user();
         $posts = $this->postService->getPublicListing($user);
         $listingEngagement = $this->postViewService->getListingEngagementForPostIds(
-            $posts->getCollection()->pluck('id')->all(),
+            $posts->getCollection()->pluck('id')->map(fn (mixed $id): int => TypeCast::int($id))->values(),
         );
         $request->attributes->set(HttpCacheRequestAttributes::CACHE_CONTEXT,
             $this->seoService->httpCacheContextForListing($posts, $user, $listingEngagement));

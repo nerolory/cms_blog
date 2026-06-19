@@ -17,6 +17,9 @@ class EditUser extends EditRecord
 
     protected static string $resource = UserResource::class;
 
+    /**
+     * after save.
+     */
     protected function afterSave(): void
     {
         $this->ensureUserHasRole();

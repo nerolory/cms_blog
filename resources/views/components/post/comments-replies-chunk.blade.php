@@ -3,12 +3,5 @@
 
 
 @foreach ($replies as $reply)
-
-    <x-post.comment-item :post="$post" :comment="$reply"
-
-        :reaction-summary="$reactionSummaries->get($reply->id)"
-
-        :indented="true" />
-
+    <x-post.comment-item :post="$post" :comment="$reply" :reaction-summary="$reactionSummaries->get($reply->id)" :indented="true" />
 @endforeach
-

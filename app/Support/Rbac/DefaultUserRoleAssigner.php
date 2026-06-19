@@ -7,6 +7,10 @@ use App\Repositories\Contracts\UserRepositoryContract;
 
 /**
  * Назначает роль user, если у учётной записи нет ни одной роли.
+
+ *
+ * @property-read RoleProvisioner $roleProvisioner
+ * @property-read UserRepositoryContract $users
  */
 final class DefaultUserRoleAssigner
 {
@@ -15,6 +19,12 @@ final class DefaultUserRoleAssigner
         protected UserRepositoryContract $users,
     ) {}
 
+    /**
+     * assign if missing.
+     *
+     * @param  User  $user
+     * @return User
+     */
     public function assignIfMissing(User $user): User
     {
         if ($user->roles()->count() > 0) {

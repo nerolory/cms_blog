@@ -163,12 +163,13 @@ class SeoService implements SeoServiceContract
     ): HttpCacheContext {
         $lastModified = $post->updated_at ?? now();
         $viewerKey = $viewer !== null ? (string) $viewer->id : 'guest';
-        $etag = $this->buildEtag([$this->cacheVersions->current(), $this->cacheVersions->get(CacheVersionManager::POSTS),
+        $etag = $this->buildEtag([$this->cacheVersions->current(),
+            $this->cacheVersions->get(CacheVersionManager::POSTS),
             'post-v3', (string) $post->id, (string) $lastModified->getTimestamp(), $viewerKey,
             (string) $viewsCount, $engagementVersion, (string) $totalVisibleComments]);
 
         return new HttpCacheContext(lastModified: $lastModified, etag: $etag,
-            cacheControl: 'public, max-age=60, must-revalidate', robotsTag: $this->resolveRobots($post));
+            cacheControl: 'private, max-age=60, must-revalidate', robotsTag: $this->resolveRobots($post));
     }
 
     /**
@@ -187,7 +188,8 @@ class SeoService implements SeoServiceContract
             ->getTimestamp()) ?? now()->getTimestamp();
         $lastModified = (new \DateTimeImmutable)->setTimestamp((int) $latest);
         $viewsFingerprint = $this->buildListingViewsFingerprint($listingEngagement);
-        $etag = $this->buildEtag([$this->cacheVersions->current(), $this->cacheVersions->get(CacheVersionManager::POSTS),
+        $etag = $this->buildEtag([$this->cacheVersions->current(),
+            $this->cacheVersions->get(CacheVersionManager::POSTS),
             'listing-v4', (string) $posts->currentPage(), (string) $posts->total(),
             (string) $lastModified->getTimestamp(), $viewerKey, $viewsFingerprint]);
         $repositoryTimestamp = $this->seoRepository->getLatestPublicListingTimestamp();
@@ -272,7 +274,7 @@ class SeoService implements SeoServiceContract
     {
         $maxAge = TypeCast::int(config('seo.cache.max_age', 3600), 3600);
 
-        return 'public, max-age='.$maxAge.', must-revalidate';
+        return 'private, max-age='.$maxAge.', must-revalidate';
     }
 
     /**
@@ -286,7 +288,8 @@ class SeoService implements SeoServiceContract
 
         return $listingEngagement
             ->sortKeys()
-            ->map(static fn (PostListEngagementItem $item, mixed $postId): string => TypeCast::int($postId).':'.$item->viewsCount)
+            ->map(static fn (PostListEngagementItem $item,
+                mixed $postId): string => TypeCast::int($postId).':'.$item->viewsCount)
             ->implode(',');
     }
 

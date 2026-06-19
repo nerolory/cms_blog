@@ -38,6 +38,9 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * apply configuration.
+
+     *
+     * @return bool
      */
     public function applyConfiguration(): bool
     {
@@ -58,6 +61,9 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * settings.
+
+     *
+     * @return MailSettingsData
      */
     public function settings(): MailSettingsData
     {
@@ -74,6 +80,9 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * save settings.
+
+     *
+     * @return MailSettingsData
      */
     public function saveSettings(MailSettingsData $data): MailSettingsData
     {
@@ -103,6 +112,9 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * send test message.
+
+     *
+     * @return bool
      */
     public function sendTestMessage(string $recipient): bool
     {
@@ -117,6 +129,9 @@ class MailSettingsService implements MailSettingsServiceContract
 
     /**
      * Проверяет email verification required.
+
+     *
+     * @return bool
      */
     public function isEmailVerificationRequired(): bool
     {

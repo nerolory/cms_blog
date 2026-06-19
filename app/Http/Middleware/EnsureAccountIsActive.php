@@ -45,6 +45,7 @@ class EnsureAccountIsActive
                 __('auth.verification.required')) : redirect()->route('verification.notice');
         }
 
-        return EngagementSpaRequest::matches($request) ? abort(403, __('auth.pending.required')) : redirect()->route('account.pending');
+        return EngagementSpaRequest::matches($request) ? abort(403,
+            __('auth.pending.required')) : redirect()->route('account.pending');
     }
 }

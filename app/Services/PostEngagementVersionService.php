@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Redis;
  */
 class PostEngagementVersionService implements PostEngagementVersionServiceContract
 {
+    /**
+     * Возвращает .
+     *
+     * @param  int  $postId
+     * @return string
+     */
     public function get(int $postId): string
     {
         try {
@@ -19,9 +25,15 @@ class PostEngagementVersionService implements PostEngagementVersionServiceContra
             return '0';
         }
 
-        return $value !== null && $value !== false ? (string) $value : '0';
+        return is_string($value) && $value !== '' ? $value : '0';
     }
 
+    /**
+     * bump.
+     *
+     * @param  int  $postId
+     * @return string
+     */
     public function bump(int $postId): string
     {
         try {

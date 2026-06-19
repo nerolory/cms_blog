@@ -15,6 +15,9 @@ class CreateUser extends CreateRecord
 
     protected static string $resource = UserResource::class;
 
+    /**
+     * after create.
+     */
     protected function afterCreate(): void
     {
         $this->ensureUserHasRole();

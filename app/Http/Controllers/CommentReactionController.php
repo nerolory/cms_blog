@@ -14,6 +14,12 @@ use Illuminate\Http\RedirectResponse;
 
 /**
  * Реакции на комментарии.
+
+ *
+ * @property-read CommentReactionServiceContract $commentReactionService
+ * @property-read CommentServiceContract $commentService
+ * @property-read PostServiceContract $postService
+ * @property-read EngagementMutationResponder $engagementResponder
  */
 class CommentReactionController extends Controller
 {
@@ -24,6 +30,14 @@ class CommentReactionController extends Controller
         protected EngagementMutationResponder $engagementResponder,
     ) {}
 
+    /**
+     * store.
+     *
+     * @param  StoreCommentReactionRequest  $request
+     * @param  string  $postSlug
+     * @param  int  $commentId
+     * @return JsonResponse|RedirectResponse
+     */
     public function store(
         StoreCommentReactionRequest $request,
         string $postSlug,

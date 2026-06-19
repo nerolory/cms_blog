@@ -15,6 +15,9 @@ final class SchemaInspector
 
     /**
      * Включена ли проверка существования таблиц через pg_catalog.
+
+     *
+     * @return bool
      */
     public static function isEnabled(): bool
     {
@@ -27,6 +30,9 @@ final class SchemaInspector
 
     /**
      * Проверяет наличие таблицы settings.
+
+     *
+     * @return bool
      */
     public static function hasSettingsTable(): bool
     {
@@ -34,21 +40,24 @@ final class SchemaInspector
             return true;
         }
 
+        if (app()->runningUnitTests()) {
+            return self::probeSettingsTable();
+        }
+
         if (self::$hasSettingsTable !== null) {
             return self::$hasSettingsTable;
         }
 
-        try {
-            self::$hasSettingsTable = Schema::hasTable('settings');
-        } catch (\Throwable) {
-            self::$hasSettingsTable = false;
-        }
+        self::$hasSettingsTable = self::probeSettingsTable();
 
         return self::$hasSettingsTable;
     }
 
     /**
      * Проверяет наличие таблицы site_templates.
+
+     *
+     * @return bool
      */
     public static function hasSiteTemplatesTable(): bool
     {
@@ -56,15 +65,15 @@ final class SchemaInspector
             return true;
         }
 
+        if (app()->runningUnitTests()) {
+            return self::probeSiteTemplatesTable();
+        }
+
         if (self::$hasSiteTemplatesTable !== null) {
             return self::$hasSiteTemplatesTable;
         }
 
-        try {
-            self::$hasSiteTemplatesTable = Schema::hasTable('site_templates');
-        } catch (\Throwable) {
-            self::$hasSiteTemplatesTable = false;
-        }
+        self::$hasSiteTemplatesTable = self::probeSiteTemplatesTable();
 
         return self::$hasSiteTemplatesTable;
     }
@@ -76,5 +85,23 @@ final class SchemaInspector
     {
         self::$hasSettingsTable = null;
         self::$hasSiteTemplatesTable = null;
+    }
+
+    private static function probeSettingsTable(): bool
+    {
+        try {
+            return Schema::hasTable('settings');
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private static function probeSiteTemplatesTable(): bool
+    {
+        try {
+            return Schema::hasTable('site_templates');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

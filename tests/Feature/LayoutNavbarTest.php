@@ -27,7 +27,8 @@ class LayoutNavbarTest extends TestCase
     }
 
     /**
-     * Авторизованному пользователю в шапке показывается баланс токенов.
+     * Авторизованному пользователю в шапке показывается баланс
+     * токенов.
      */
     public function test_navbar_shows_token_balance_for_authenticated_user(): void
     {
@@ -98,7 +99,8 @@ class LayoutNavbarTest extends TestCase
     }
 
     /**
-     * Повторный запрос /posts не падает у авторизованного пользователя.
+     * Повторный запрос /posts не падает у авторизованного
+     * пользователя.
      */
     public function test_posts_index_second_request_for_authenticated_user(): void
     {

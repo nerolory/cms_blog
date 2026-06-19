@@ -7,6 +7,7 @@ use App\Enums\CommentStatus;
 use App\Enums\PostStatus;
 use App\Models\PostComment;
 use App\Repositories\Contracts\CommentRepositoryContract;
+use App\Support\TypeCast;
 use Illuminate\Support\Collection;
 
 /**
@@ -34,6 +35,9 @@ class CommentRepository implements CommentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return Collection<int, PostComment>
      */
     public function getVisibleRootCommentsForPost(int $postId, int $limit = 10, int $offset = 0): Collection
     {
@@ -43,6 +47,9 @@ class CommentRepository implements CommentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return int
      */
     public function countVisibleRootsForPost(int $postId): int
     {
@@ -52,6 +59,9 @@ class CommentRepository implements CommentRepositoryContract
 
     /**
      * Возвращает visible thread replies.
+
+     *
+     * @return Collection<int, PostComment>
      */
     public function getVisibleThreadReplies(int $threadRootId, int $limit = 10, int $offset = 0): Collection
     {
@@ -61,6 +71,9 @@ class CommentRepository implements CommentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return int
      */
     public function countVisibleThreadReplies(int $threadRootId): int
     {
@@ -147,9 +160,9 @@ class CommentRepository implements CommentRepositoryContract
     /**
      * {@inheritdoc}
      *
-     * @return array{totalRoots: int, totalVisible: int}
+     * @return Collection<string, int>
      */
-    public function getVisibleSectionStats(int $postId): array
+    public function getVisibleSectionStats(int $postId): Collection
     {
         /** @var object{total_roots: int|string, total_visible: int|string}|null $row */
         $row = $this->comment->newQuery()
@@ -159,33 +172,36 @@ class CommentRepository implements CommentRepositoryContract
             ->selectRaw('COUNT(*) FILTER (WHERE parent_id IS NULL) as total_roots')
             ->first();
         if ($row === null) {
-            return ['totalRoots' => 0, 'totalVisible' => 0];
+            return collect(['totalRoots' => 0, 'totalVisible' => 0]);
         }
 
-        return [
+        return collect([
             'totalRoots' => (int) $row->total_roots,
             'totalVisible' => (int) $row->total_visible,
-        ];
+        ]);
     }
 
     /**
      * {@inheritdoc}
      *
-     * @param  list<int>  $rootIds
      * @return Collection<int, int>
      */
-    public function countVisibleRepliesByRootIds(array $rootIds): Collection
+    public function countVisibleRepliesByRootIds(Collection $rootIds): Collection
     {
-        if ($rootIds === []) {
+        if ($rootIds->isEmpty()) {
             return collect();
         }
 
+        $ids = $rootIds->values()->all();
+
         return $this->comment->newQuery()
             ->selectRaw('parent_id, COUNT(*) as aggregate')
-            ->whereIn('parent_id', $rootIds)
+            ->whereIn('parent_id', $ids)
             ->where('status', CommentStatus::Visible)
             ->groupBy('parent_id')
             ->pluck('aggregate', 'parent_id')
-            ->mapWithKeys(fn (mixed $count, mixed $parentId): array => [(int) $parentId => (int) $count]);
+            ->mapWithKeys(fn (mixed $count, mixed $parentId): array => [
+                TypeCast::int($parentId) => TypeCast::int($count),
+            ]);
     }
 }

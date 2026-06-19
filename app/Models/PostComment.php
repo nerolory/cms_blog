@@ -103,6 +103,9 @@ class PostComment extends Model
 
     /**
      * Прямой ответ на корневой комментарий (с отступом).
+
+     *
+     * @return bool
      */
     public function isDirectReplyToRoot(): bool
     {
@@ -112,6 +115,9 @@ class PostComment extends Model
 
     /**
      * Показывать ссылку на комментарий, на который отвечали.
+
+     *
+     * @return bool
      */
     public function shouldShowReplyReference(): bool
     {

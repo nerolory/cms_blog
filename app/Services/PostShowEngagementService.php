@@ -11,6 +11,10 @@ use App\Support\Post\PostShowContent;
 
 /**
  * HTML-фрагмент engagement-блока для SPA и SSE.
+
+ *
+ * @property-read PostViewServiceContract $postViewService
+ * @property-read SeoServiceContract $seoService
  */
 class PostShowEngagementService implements PostShowEngagementServiceContract
 {
@@ -19,6 +23,13 @@ class PostShowEngagementService implements PostShowEngagementServiceContract
         protected SeoServiceContract $seoService,
     ) {}
 
+    /**
+     * render app inner html.
+     *
+     * @param  Post  $post
+     * @param  ?User  $viewer
+     * @return string
+     */
     public function renderAppInnerHtml(Post $post, ?User $viewer): string
     {
         $engagement = $this->postViewService->getEngagement($post, $viewer?->id);

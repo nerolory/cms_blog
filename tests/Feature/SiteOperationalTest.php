@@ -159,6 +159,7 @@ class SiteOperationalTest extends TestCase
     {
         $this->bindOperationalRepository($this->createOperationalRepositoryMock(databaseOk: false,
             databaseMessage: 'db down', queueWorkerFresh: false));
+        app(SiteOperationalServiceContract::class)->forgetAssessCache();
     }
 
     private function createOperationalRepositoryMock(bool $databaseOk = true, ?string $databaseMessage = null,

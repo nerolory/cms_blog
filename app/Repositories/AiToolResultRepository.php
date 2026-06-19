@@ -40,6 +40,9 @@ class AiToolResultRepository implements AiToolResultRepositoryContract
 
     /**
      * upsert for post.
+
+     *
+     * @return AiToolResult
      */
     public function upsertForPost(Post $post, AiToolCode $toolCode, AiResultStatus $status, string $summary,
         ?string $detail = null): AiToolResult
@@ -89,7 +92,7 @@ class AiToolResultRepository implements AiToolResultRepositoryContract
      */
     private function loadCompletedPayloadFromDatabase(int $postId): array
     {
-        return $this->result->newQuery()
+        $payload = $this->result->newQuery()
             ->where('subject_type', Post::class)
             ->where('subject_id', $postId)
             ->where('status', AiResultStatus::Completed)
@@ -97,11 +100,16 @@ class AiToolResultRepository implements AiToolResultRepositoryContract
             ->get()
             ->map(fn (AiToolResult $result): array => [
                 'id' => $result->id,
-                'tool_code' => $result->tool_code instanceof AiToolCode ? $result->tool_code->value : (string) $result->tool_code,
+                'tool_code' => $result->tool_code instanceof AiToolCode ? $result->tool_code->value : (string) $result
+                    ->tool_code,
                 'payload' => TypeCast::array($result->payload),
                 'completed_at' => $result->completed_at?->toJSON(),
             ])
+            ->values()
             ->all();
+
+        /** @var list<array<string, mixed>> $payload */
+        return $payload;
     }
 
     /**

@@ -57,8 +57,7 @@
 
     @unless ($isPreview ?? false)
         <x-post.ai-insights :insights="$aiInsights" :post="$post" />
-        <x-post.engagement :engagement="$engagement" :post="$post" :seo="$seo" :reading-minutes="$readingMinutes"
-            :engagement-version="$engagementVersion" />
+        <x-post.engagement :engagement="$engagement" :post="$post" :seo="$seo" :reading-minutes="$readingMinutes" :engagement-version="$engagementVersion" />
     @endunless
 @endsection
 

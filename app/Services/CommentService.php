@@ -22,6 +22,11 @@ use Illuminate\Support\Facades\Redis;
 
 /**
  * Сервис comment.
+
+ *
+ * @property-read CommentRepositoryContract $comments
+ * @property-read CommentReactionServiceContract $commentReactions
+ * @property-read PostEngagementVersionServiceContract $engagementVersions
  */
 class CommentService implements CommentServiceContract
 {
@@ -37,6 +42,12 @@ class CommentService implements CommentServiceContract
         protected PostEngagementVersionServiceContract $engagementVersions,
     ) {}
 
+    /**
+     * Создаёт .
+     *
+     * @param  CommentData  $data
+     * @return PostComment
+     */
     public function create(CommentData $data): PostComment
     {
         if ($data->body === '') {
@@ -58,10 +69,19 @@ class CommentService implements CommentServiceContract
         return $comment;
     }
 
+    /**
+     * Возвращает section for post.
+     *
+     * @param  int  $postId
+     * @param  ?int  $userId
+     * @return CommentSectionData
+     */
     public function getSectionForPost(int $postId, ?int $userId): CommentSectionData
     {
         $payload = $this->resolveSectionPayload($postId);
-        $roots = $this->hydrateRootComments(TypeCast::array($payload['roots'] ?? []));
+        /** @var array<int, array<string, mixed>> $rootRows */
+        $rootRows = TypeCast::array($payload['roots'] ?? []);
+        $roots = $this->hydrateRootComments($rootRows);
         $totalRoots = TypeCast::int($payload['total_roots'] ?? 0);
         $totalVisible = TypeCast::int($payload['total_visible'] ?? 0);
         /** @var array<int|string, int|string> $replyCountsRaw */
@@ -70,7 +90,7 @@ class CommentService implements CommentServiceContract
         foreach ($replyCountsRaw as $rootId => $count) {
             $replyCounts->put((int) $rootId, TypeCast::int($count));
         }
-        $rootIds = $roots->pluck('id')->map(fn (mixed $id): int => TypeCast::int($id))->all();
+        $rootIds = array_values($roots->pluck('id')->map(fn (mixed $id): int => TypeCast::int($id))->all());
         /** @var array<int, array<string, int>> $reactionAggregates */
         $reactionAggregates = TypeCast::array($payload['reaction_aggregates'] ?? []);
 
@@ -84,12 +104,21 @@ class CommentService implements CommentServiceContract
         );
     }
 
+    /**
+     * forget section cache for post.
+     *
+     * @param  int  $postId
+     */
     public function forgetSectionCacheForPost(int $postId): void
     {
         $this->forgetSectionCache($postId);
     }
 
     /**
+     * Возвращает root page.
+     *
+     * @param  int  $postId
+     * @param  int  $offset
      * @return Collection<int, PostComment>
      */
     public function getRootPage(int $postId, int $offset): Collection
@@ -98,25 +127,44 @@ class CommentService implements CommentServiceContract
     }
 
     /**
-     * @return array{replies: Collection<int, PostComment>, hasMore: bool, total: int}
+     * Возвращает thread replies page.
+     *
+     * @param  int  $threadRootId
+     * @param  int  $offset
+     * @return Collection<string, mixed>
      */
-    public function getThreadRepliesPage(int $threadRootId, int $offset): array
+    public function getThreadRepliesPage(int $threadRootId, int $offset): Collection
     {
         $replies = $this->comments->getVisibleThreadReplies($threadRootId, self::REPLIES_PAGE_SIZE, $offset);
         $total = $this->comments->countVisibleThreadReplies($threadRootId);
 
-        return [
+        $page = collect([
             'replies' => $replies,
             'hasMore' => $total > $offset + $replies->count(),
             'total' => $total,
-        ];
+        ]);
+
+        /** @var Collection<string, mixed> $page */
+        return $page;
     }
 
+    /**
+     * Возвращает visible tree for post.
+     *
+     * @param  int  $postId
+     * @return Collection<int, PostComment>
+     */
     public function getVisibleTreeForPost(int $postId): Collection
     {
         return $this->comments->getVisibleRootCommentsForPost($postId, self::ROOT_PAGE_SIZE);
     }
 
+    /**
+     * count roots for post.
+     *
+     * @param  int  $postId
+     * @return int
+     */
     public function countRootsForPost(int $postId): int
     {
         return $this->comments->countVisibleRootsForPost($postId);
@@ -124,12 +172,21 @@ class CommentService implements CommentServiceContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return Collection<int, int>
      */
-    public function replyCountsForRoots(array $rootIds): Collection
+    public function replyCountsForRoots(Collection $rootIds): Collection
     {
         return $this->comments->countVisibleRepliesByRootIds($rootIds);
     }
 
+    /**
+     * hide.
+     *
+     * @param  PostComment  $comment
+     * @return PostComment
+     */
     public function hide(PostComment $comment): PostComment
     {
         $hidden = $this->comments->hide($comment);
@@ -138,6 +195,12 @@ class CommentService implements CommentServiceContract
         return $hidden;
     }
 
+    /**
+     * Удаляет .
+     *
+     * @param  PostComment  $comment
+     * @return bool
+     */
     public function delete(PostComment $comment): bool
     {
         $deleted = $this->comments->delete($comment);
@@ -148,6 +211,13 @@ class CommentService implements CommentServiceContract
         return $deleted;
     }
 
+    /**
+     * Находит for post.
+     *
+     * @param  int  $postId
+     * @param  int  $commentId
+     * @return PostComment
+     */
     public function findForPost(int $postId, int $commentId): PostComment
     {
         $comment = $this->comments->findById($commentId);
@@ -191,21 +261,24 @@ class CommentService implements CommentServiceContract
     {
         $roots = $this->comments->getVisibleRootCommentsForPost($postId, self::ROOT_PAGE_SIZE);
         $stats = $this->comments->getVisibleSectionStats($postId);
-        $rootIds = $roots->pluck('id')->map(fn (mixed $id): int => TypeCast::int($id))->all();
+        $rootIds = $roots->pluck('id')->map(fn (mixed $id): int => TypeCast::int($id));
         $replyCounts = $this->comments->countVisibleRepliesByRootIds($rootIds);
 
         return [
             'roots' => $roots->map(fn (PostComment $comment): array => $this->serializeRootComment($comment))->all(),
-            'total_roots' => $stats['totalRoots'],
-            'total_visible' => $stats['totalVisible'],
+            'total_roots' => TypeCast::int($stats->get('totalRoots', 0)),
+            'total_visible' => TypeCast::int($stats->get('totalVisible', 0)),
             'reply_counts' => $replyCounts->all(),
-            'reaction_aggregates' => $this->commentReactions->aggregateCountsForComments($rootIds),
+            'reaction_aggregates' => $this->commentReactions->aggregateCountsForComments($rootIds)
+                ->map(fn (Collection $counts): array => $counts->all())
+                ->all(),
         ];
     }
 
     /**
      * @param  list<int>  $commentIds
      * @param  array<int, array<string, int>>  $aggregates
+     * @return Collection<int, CommentReactionSummary>
      */
     private function buildReactionSummaries(array $commentIds, array $aggregates, ?int $userId): Collection
     {
@@ -214,8 +287,8 @@ class CommentService implements CommentServiceContract
         }
 
         $userReactions = $userId !== null
-            ? $this->commentReactions->userReactionsForComments($commentIds, $userId)
-            : [];
+            ? $this->commentReactions->userReactionsForComments(collect($commentIds), $userId)
+            : collect();
 
         $summaries = collect();
         foreach ($commentIds as $commentId) {
@@ -225,7 +298,7 @@ class CommentService implements CommentServiceContract
             }
             $summaries->put($commentId, new CommentReactionSummary(
                 counts: $counts,
-                userReaction: $userReactions[$commentId] ?? null,
+                userReaction: $userReactions->get($commentId),
             ));
         }
 

@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Support\Database\DatabaseProtection;
+use App\Support\Database\SchemaInspector;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
@@ -52,6 +53,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        SchemaInspector::forgetCachedChecks();
         DatabaseProtection::assertTestsUseIsolatedDatabase();
         Cache::flush();
         try {

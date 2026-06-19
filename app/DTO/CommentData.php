@@ -22,6 +22,8 @@ readonly class CommentData
      * from validated.
      *
      * @param  ?int  $parentId  id комментария, на который отвечают
+
+     * @return self
      */
     public static function fromValidated(int $postId, int $userId, string $body, ?int $parentId = null): self
     {

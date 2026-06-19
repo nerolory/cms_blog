@@ -2,6 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\SecurityHeaders;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\Concerns\RefreshDatabase;
 use Tests\Concerns\SeedsRoles;
 use Tests\TestCase;
@@ -14,11 +19,16 @@ class SecurityHeadersTest extends TestCase
     use RefreshDatabase;
     use SeedsRoles;
 
+    /**
+     * Подготавливает окружение теста.
+     */
     protected function setUp(): void
     {
         parent::setUp();
         $this->seedRoles();
+        Cache::flush();
     }
+
     /**
      * Security headers middleware adds standard protection headers.
      */
@@ -57,7 +67,8 @@ class SecurityHeadersTest extends TestCase
     }
 
     /**
-     * 304 не должен отдавать новый CSP-nonce: тело берётся из кеша браузера.
+     * 304 не должен отдавать новый CSP-nonce: тело берётся из кеша
+     * браузера.
      */
     public function test_csp_is_omitted_on_not_modified_response(): void
     {
@@ -77,7 +88,7 @@ class SecurityHeadersTest extends TestCase
      */
     public function test_csp_for_filament_admin_uses_nonce_and_unsafe_eval(): void
     {
-        $user = \App\Models\User::factory()->create(['locale' => 'ru']);
+        $user = User::factory()->create(['locale' => 'ru']);
         $user->assignRole('admin');
 
         $response = $this->actingAs($user)->get('/admin');
@@ -91,13 +102,15 @@ class SecurityHeadersTest extends TestCase
     }
 
     /**
-     * 5xx: без CSP — Ignition/Debugbar на странице ошибки используют inline без nonce.
+     * 5xx: без CSP — Ignition/Debugbar на странице ошибки используют inline без
+     * nonce.
      */
     public function test_csp_is_omitted_on_server_error_response(): void
     {
-        $middleware = app(\App\Http\Middleware\SecurityHeaders::class);
-        $request = \Illuminate\Http\Request::create('/login', 'GET');
-        $response = $middleware->handle($request, fn (): \Symfony\Component\HttpFoundation\Response => response('error', 500));
+        $middleware = app(SecurityHeaders::class);
+        $request = Request::create('/login', 'GET');
+        $response = $middleware->handle($request, fn (): Response => response('error',
+            500));
         $this->assertFalse($response->headers->has('Content-Security-Policy'));
     }
 

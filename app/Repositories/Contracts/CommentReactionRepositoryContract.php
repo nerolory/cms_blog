@@ -12,28 +12,63 @@ use Illuminate\Support\Collection;
  */
 interface CommentReactionRepositoryContract
 {
+    /**
+     * upsert.
+     *
+     * @param  CommentReactionData  $data
+     * @return CommentReaction
+     */
     public function upsert(CommentReactionData $data): CommentReaction;
 
+    /**
+     * remove.
+     *
+     * @param  int  $commentId
+     * @param  int  $userId
+     * @return bool
+     */
     public function remove(int $commentId, int $userId): bool;
 
     /**
+     * counts for comment.
+     *
+     * @param  int  $commentId
      * @return Collection<string, int>
      */
     public function countsForComment(int $commentId): Collection;
 
     /**
-     * @param  list<int>  $commentIds
-     * @return array<int, array<string, int>>
+     * aggregate counts for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @return Collection<int, Collection<string, int>>
      */
-    public function aggregateCountsForComments(array $commentIds): array;
+    public function aggregateCountsForComments(Collection $commentIds): Collection;
 
     /**
-     * @param  list<int>  $commentIds
-     * @return array<int, string>
+     * user reactions for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @param  int  $userId
+     * @return Collection<int, string>
      */
-    public function userReactionsForComments(array $commentIds, int $userId): array;
+    public function userReactionsForComments(Collection $commentIds, int $userId): Collection;
 
-    public function summaryForComments(array $commentIds, ?int $userId): Collection;
+    /**
+     * summary for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @param  ?int  $userId
+     * @return Collection<int, CommentReactionSummary>
+     */
+    public function summaryForComments(Collection $commentIds, ?int $userId): Collection;
 
+    /**
+     * summary for comment.
+     *
+     * @param  int  $commentId
+     * @param  ?int  $userId
+     * @return CommentReactionSummary
+     */
     public function summaryForComment(int $commentId, ?int $userId): CommentReactionSummary;
 }

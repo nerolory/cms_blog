@@ -19,6 +19,9 @@ class SiteSettingsRepository implements SiteSettingsRepositoryContract
 
     /**
      * {@inheritDoc}
+
+     *
+     * @return SiteSettingsData
      */
     public function getSiteSettings(): SiteSettingsData
     {

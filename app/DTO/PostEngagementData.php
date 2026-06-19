@@ -8,6 +8,10 @@ use Illuminate\Support\Collection;
  * DTO post engagement.
  *
  * @property-read Collection<string, int> $reactionCounts
+
+ * @property-read int $viewsCount
+ * @property-read CommentSectionData $comments
+ * @property-read ?string $userReaction
  */
 readonly class PostEngagementData
 {

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\DTO\SiteSettingsData;
+use App\Filament\Pages\SiteSettingsPage;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Contracts\SiteSettingsServiceContract;
@@ -21,6 +23,9 @@ class SiteSettingsTest extends TestCase
     use RefreshDatabase;
     use SeedsRoles;
 
+    /**
+     * test custom site name appears on public navbar.
+     */
     public function test_custom_site_name_appears_on_public_navbar(): void
     {
         Setting::query()->create([
@@ -35,6 +40,9 @@ class SiteSettingsTest extends TestCase
             ->assertDontSee('navbar-brand">Laravel', false);
     }
 
+    /**
+     * test admin can save site name and cache is invalidated.
+     */
     public function test_admin_can_save_site_name_and_cache_is_invalidated(): void
     {
         $this->seedRoles();
@@ -42,7 +50,7 @@ class SiteSettingsTest extends TestCase
         $admin->assignRole('admin');
 
         $service = app(SiteSettingsServiceContract::class);
-        $service->saveSettings(new \App\DTO\SiteSettingsData(siteName: 'Старое имя'));
+        $service->saveSettings(new SiteSettingsData(siteName: 'Старое имя'));
         Cache::put(ApplicationCacheKeys::SITE_BRANDING, ['site_name' => 'Старое имя'], 31_536_000);
 
         $this->actingAs($admin)
@@ -50,7 +58,7 @@ class SiteSettingsTest extends TestCase
             ->assertOk();
 
         Livewire::actingAs($admin)
-            ->test(\App\Filament\Pages\SiteSettingsPage::class)
+            ->test(SiteSettingsPage::class)
             ->fillForm(['site_name' => 'Новое имя'])
             ->call('save')
             ->assertHasNoFormErrors();

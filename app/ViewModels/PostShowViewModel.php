@@ -11,6 +11,17 @@ use App\Models\Post;
 
 /**
  * Данные страницы публичного просмотра поста.
+
+ *
+ * @property-read Post $post
+ * @property-read SeoMetaData $seo
+ * @property-read PostEngagementData $engagement
+ * @property-read PostAiInsights $aiInsights
+ * @property-read bool $canUpdatePost
+ * @property-read bool $canOpenAdmin
+ * @property-read PostShowContentData $content
+ * @property-read HttpCacheContext $httpCacheContext
+ * @property-read string $engagementVersion
  */
 readonly class PostShowViewModel
 {

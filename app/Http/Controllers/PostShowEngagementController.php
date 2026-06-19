@@ -11,6 +11,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * HTML-фрагмент и SSE-поток engagement-блока поста.
+
+ *
+ * @property-read PostServiceContract $postService
+ * @property-read PostShowEngagementServiceContract $engagement
+ * @property-read PostEngagementVersionServiceContract $versions
  */
 class PostShowEngagementController extends Controller
 {
@@ -20,6 +25,13 @@ class PostShowEngagementController extends Controller
         protected PostEngagementVersionServiceContract $versions,
     ) {}
 
+    /**
+     * show.
+     *
+     * @param  Request  $request
+     * @param  string  $postSlug
+     * @return JsonResponse
+     */
     public function show(Request $request, string $postSlug): JsonResponse
     {
         $user = $request->user();
@@ -31,6 +43,13 @@ class PostShowEngagementController extends Controller
         ]);
     }
 
+    /**
+     * stream.
+     *
+     * @param  Request  $request
+     * @param  string  $postSlug
+     * @return StreamedResponse
+     */
     public function stream(Request $request, string $postSlug): StreamedResponse
     {
         $user = $request->user();

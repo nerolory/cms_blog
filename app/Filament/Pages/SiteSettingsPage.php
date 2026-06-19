@@ -51,21 +51,41 @@ class SiteSettingsPage extends Page
         $this->siteSettingsService = $siteSettingsService;
     }
 
+    /**
+     * Возвращает navigation label.
+     *
+     * @return string
+     */
     public static function getNavigationLabel(): string
     {
         return __('admin.site.navigation');
     }
 
+    /**
+     * Возвращает navigation group.
+     *
+     * @return ?string
+     */
     public static function getNavigationGroup(): ?string
     {
         return __('admin.navigation.system');
     }
 
+    /**
+     * Возвращает title.
+     *
+     * @return string|Htmlable
+     */
     public function getTitle(): string|Htmlable
     {
         return __('admin.site.title');
     }
 
+    /**
+     * Проверяет возможность access.
+     *
+     * @return bool
+     */
     public static function canAccess(): bool
     {
         $user = auth()->user();
@@ -73,11 +93,21 @@ class SiteSettingsPage extends Page
         return $user !== null && $user->can('settings.manage');
     }
 
+    /**
+     * mount.
+     *
+     * @param  SiteSettingsServiceContract  $siteSettingsService
+     */
     public function mount(SiteSettingsServiceContract $siteSettingsService): void
     {
         $this->form->fill($siteSettingsService->settings()->toFormState());
     }
 
+    /**
+     * save.
+     *
+     * @param  SiteSettingsServiceContract  $siteSettingsService
+     */
     public function save(SiteSettingsServiceContract $siteSettingsService): void
     {
         /** @var array<string, mixed> $state */
@@ -86,11 +116,23 @@ class SiteSettingsPage extends Page
         Notification::make()->success()->title(__('admin.site.notifications.saved'))->send();
     }
 
+    /**
+     * default form.
+     *
+     * @param  Schema  $schema
+     * @return Schema
+     */
     public function defaultForm(Schema $schema): Schema
     {
         return $schema->statePath('data');
     }
 
+    /**
+     * form.
+     *
+     * @param  Schema  $schema
+     * @return Schema
+     */
     public function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -106,11 +148,22 @@ class SiteSettingsPage extends Page
         ]);
     }
 
+    /**
+     * content.
+     *
+     * @param  Schema  $schema
+     * @return Schema
+     */
     public function content(Schema $schema): Schema
     {
         return $schema->components([$this->getFormContentComponent()]);
     }
 
+    /**
+     * Возвращает form content component.
+     *
+     * @return Component
+     */
     protected function getFormContentComponent(): Component
     {
         return Form::make([EmbeddedSchema::make('form')])
@@ -126,7 +179,9 @@ class SiteSettingsPage extends Page
     }
 
     /**
-     * @return array<int, Action>
+     * Возвращает header actions.
+     *
+     * @return array<string, mixed>
      */
     protected function getHeaderActions(): array
     {

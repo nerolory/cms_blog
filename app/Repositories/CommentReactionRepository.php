@@ -12,11 +12,19 @@ use Illuminate\Support\Collection;
 
 /**
  * Репозиторий реакций на комментарии.
+ *
+ * @property-read CommentReaction $reaction
  */
 class CommentReactionRepository implements CommentReactionRepositoryContract
 {
     public function __construct(protected CommentReaction $reaction) {}
 
+    /**
+     * upsert.
+     *
+     * @param  CommentReactionData  $data
+     * @return CommentReaction
+     */
     public function upsert(CommentReactionData $data): CommentReaction
     {
         return $this->reaction->newQuery()->updateOrCreate(
@@ -25,63 +33,100 @@ class CommentReactionRepository implements CommentReactionRepositoryContract
         );
     }
 
+    /**
+     * remove.
+     *
+     * @param  int  $commentId
+     * @param  int  $userId
+     * @return bool
+     */
     public function remove(int $commentId, int $userId): bool
     {
         return $this->reaction->newQuery()->where('comment_id', $commentId)->where('user_id', $userId)->delete() > 0;
     }
 
+    /**
+     * counts for comment.
+     *
+     * @param  int  $commentId
+     * @return Collection<string, int>
+     */
     public function countsForComment(int $commentId): Collection
     {
         $rows = $this->reaction->newQuery()->selectRaw('type, COUNT(*) as aggregate')->where('comment_id',
-            $commentId)->groupBy('type')->pluck('aggregate', 'type');
+            $commentId)->groupBy('type')->pluck('aggregate', 'type')
+            ->map(fn (mixed $count): int => TypeCast::int($count));
 
-        return $this->normalizeCounts($rows);
+        return $this->normalizeCounts($rows->all());
     }
 
-    public function summaryForComments(array $commentIds, ?int $userId): Collection
+    /**
+     * summary for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @param  ?int  $userId
+     * @return Collection<int, CommentReactionSummary>
+     */
+    public function summaryForComments(Collection $commentIds, ?int $userId): Collection
     {
-        if ($commentIds === []) {
+        if ($commentIds->isEmpty()) {
             return collect();
         }
 
-        $aggregates = $this->loadAggregatesForComments($commentIds);
+        $ids = array_values($commentIds->all());
+        $aggregates = $this->loadAggregatesForComments($ids);
 
-        return $this->summariesFromAggregates($commentIds, $aggregates,
-            $userId !== null ? $this->userReactionsForComments($commentIds, $userId) : []);
+        return $this->summariesFromAggregates(
+            $ids,
+            $aggregates,
+            $userId !== null ? $this->userReactionsForComments($commentIds, $userId) : collect(),
+        );
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @return Collection<int, Collection<string, int>>
      */
-    public function aggregateCountsForComments(array $commentIds): array
+    public function aggregateCountsForComments(Collection $commentIds): Collection
     {
-        if ($commentIds === []) {
-            return [];
+        if ($commentIds->isEmpty()) {
+            return collect();
         }
 
-        return $this->loadAggregatesForComments($commentIds);
+        $ids = array_values($commentIds->all());
+        $aggregates = $this->loadAggregatesForComments($ids);
+        $result = collect();
+        foreach ($ids as $commentId) {
+            $result->put($commentId, collect($aggregates[$commentId] ?? []));
+        }
+
+        return $result;
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @return Collection<int, string>
      */
-    public function userReactionsForComments(array $commentIds, int $userId): array
+    public function userReactionsForComments(Collection $commentIds, int $userId): Collection
     {
-        if ($commentIds === []) {
-            return [];
+        if ($commentIds->isEmpty()) {
+            return collect();
         }
 
+        $ids = array_values($commentIds->all());
         $rows = $this->reaction->newQuery()
             ->select(['comment_id', 'type'])
-            ->whereIn('comment_id', $commentIds)
+            ->whereIn('comment_id', $ids)
             ->where('user_id', $userId)
             ->get();
-        $userReactions = [];
+        $userReactions = collect();
         foreach ($rows as $row) {
             $commentId = TypeCast::int($row->comment_id);
-            $userReactions[$commentId] = $row->type instanceof ReactionType
+            $userReactions->put($commentId, $row->type instanceof ReactionType
                 ? $row->type->value
-                : TypeCast::string($row->type);
+                : TypeCast::string($row->type));
         }
 
         return $userReactions;
@@ -108,34 +153,47 @@ class CommentReactionRepository implements CommentReactionRepositoryContract
     /**
      * @param  list<int>  $commentIds
      * @param  array<int, array<string, int>>  $aggregates
-     * @param  array<int, string>  $userReactions
+     * @param  Collection<int, string>  $userReactions
      * @return Collection<int, CommentReactionSummary>
      */
-    private function summariesFromAggregates(array $commentIds, array $aggregates, array $userReactions): Collection
-    {
+    private function summariesFromAggregates(
+        array $commentIds,
+        array $aggregates,
+        Collection $userReactions,
+    ): Collection {
         $summaries = collect();
         foreach ($commentIds as $commentId) {
-            $counts = $this->normalizeCounts(collect($aggregates[$commentId] ?? []));
+            $counts = $this->normalizeCounts($aggregates[$commentId] ?? []);
             $summaries->put($commentId, new CommentReactionSummary(
                 counts: $counts,
-                userReaction: $userReactions[$commentId] ?? null,
+                userReaction: $userReactions->get($commentId),
             ));
         }
 
         return $summaries;
     }
 
+    /**
+     * summary for comment.
+     *
+     * @param  int  $commentId
+     * @param  ?int  $userId
+     * @return CommentReactionSummary
+     */
     public function summaryForComment(int $commentId, ?int $userId): CommentReactionSummary
     {
-        return $this->summaryForComments([$commentId], $userId)->get($commentId)
-            ?? new CommentReactionSummary(counts: $this->normalizeCounts(collect()));
+        $summary = $this->summaryForComments(collect([$commentId]), $userId)->get($commentId);
+
+        return $summary instanceof CommentReactionSummary
+            ? $summary
+            : new CommentReactionSummary(counts: $this->normalizeCounts([]));
     }
 
     /**
-     * @param  Collection<int|string, mixed>  $rows
+     * @param  array<int|string, mixed>  $rows
      * @return Collection<string, int>
      */
-    private function normalizeCounts(Collection $rows): Collection
+    private function normalizeCounts(array $rows): Collection
     {
         $counts = collect();
         foreach (ReactionType::all() as $type) {

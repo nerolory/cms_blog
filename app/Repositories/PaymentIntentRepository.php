@@ -11,6 +11,9 @@ use App\Repositories\Contracts\PaymentIntentRepositoryContract;
 
 /**
  * Репозиторий payment intents.
+
+ *
+ * @property-read PaymentIntent $intent
  */
 class PaymentIntentRepository implements PaymentIntentRepositoryContract
 {
@@ -18,6 +21,9 @@ class PaymentIntentRepository implements PaymentIntentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return PaymentIntent
      */
     public function createPending(User $user, TokenPackage $package, PaymentResultData $payment): PaymentIntent
     {
@@ -36,6 +42,9 @@ class PaymentIntentRepository implements PaymentIntentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return ?PaymentIntent
      */
     public function findByGatewayTransaction(string $gateway, string $transactionId): ?PaymentIntent
     {
@@ -47,6 +56,9 @@ class PaymentIntentRepository implements PaymentIntentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return PaymentIntent
      */
     public function markSucceeded(PaymentIntent $intent, int $tokenTransactionId): PaymentIntent
     {
@@ -60,6 +72,9 @@ class PaymentIntentRepository implements PaymentIntentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return PaymentIntent
      */
     public function markFailed(PaymentIntent $intent, ?string $reason = null): PaymentIntent
     {
@@ -74,6 +89,9 @@ class PaymentIntentRepository implements PaymentIntentRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return PaymentIntentStatus
      */
     public function status(PaymentIntent $intent): PaymentIntentStatus
     {

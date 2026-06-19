@@ -9,10 +9,10 @@ use App\Models\Setting;
 use App\Models\SiteTemplate;
 use App\Models\SiteTemplateTheme;
 use App\Repositories\Contracts\SiteTemplateRepositoryContract;
+use App\Support\Cache\ApplicationCacheKeys;
 use App\Support\Database\SchemaInspector;
 use App\Support\Site\SiteTemplateSettingKey;
 use App\Support\TypeCast;
-use App\Support\Cache\ApplicationCacheKeys;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -54,6 +54,9 @@ class SiteTemplateRepository implements SiteTemplateRepositoryContract
 
     /**
      * Возвращает активный шаблон с темами из межзапросного кэша.
+
+     *
+     * @return ?SiteTemplate
      */
     public function findActiveTemplate(): ?SiteTemplate
     {

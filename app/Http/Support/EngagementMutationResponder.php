@@ -13,6 +13,10 @@ use Illuminate\Http\Request;
 
 /**
  * JSON-ответ с HTML engagement-фрагмента после мутаций.
+
+ *
+ * @property-read PostShowEngagementServiceContract $engagement
+ * @property-read PostEngagementVersionServiceContract $versions
  */
 final class EngagementMutationResponder
 {
@@ -21,6 +25,15 @@ final class EngagementMutationResponder
         protected PostEngagementVersionServiceContract $versions,
     ) {}
 
+    /**
+     * respond.
+     *
+     * @param  Request  $request
+     * @param  Post  $post
+     * @param  ?User  $user
+     * @param  ?string  $flashTranslationKey
+     * @return JsonResponse|RedirectResponse
+     */
     public function respond(
         Request $request,
         Post $post,

@@ -80,6 +80,9 @@ class SiteOperationalService implements SiteOperationalServiceContract
 
     /**
      * Проверяет critical operational.
+
+     *
+     * @return bool
      */
     public function isCriticalOperational(): bool
     {
@@ -90,6 +93,9 @@ class SiteOperationalService implements SiteOperationalServiceContract
 
     /**
      * Возвращает закэшированный флаг criticalOk без запуска probe.
+
+     *
+     * @return ?bool
      */
     public function getCachedCriticalOk(): ?bool
     {

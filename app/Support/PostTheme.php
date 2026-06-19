@@ -62,6 +62,9 @@ final class PostTheme
 
     /**
      * Цвет подложки контента: контраст к цвету текста темы.
+
+     *
+     * @return string
      */
     public static function contrastSurface(?string $textColor): string
     {
@@ -73,7 +76,11 @@ final class PostTheme
     }
 
     /**
-     * Однотонный текст на подложке: противоположная яркость к цвету поверхности.
+     * Однотонный текст на подложке: противоположная яркость к
+     * цвету поверхности.
+
+     *
+     * @return string
      */
     public static function contrastingText(?string $surfaceColor): string
     {
@@ -86,6 +93,9 @@ final class PostTheme
 
     /**
      * Относительная яркость hex-цвета (0–1).
+
+     *
+     * @return float
      */
     public static function relativeLuminance(string $hexColor): float
     {

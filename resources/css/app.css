@@ -135,7 +135,7 @@ body {
 .post-card--has-bg .post-card__panel {
     background-color: color-mix(
         in srgb,
-        var(--post-panel-tint, #ffffff) 50%,
+        var(--post-panel-tint, #fff) 50%,
         transparent
     );
     backdrop-filter: blur(4px);
@@ -189,7 +189,7 @@ body {
 .post-article--has-bg .post-article__panel {
     background-color: color-mix(
         in srgb,
-        var(--post-panel-tint, #ffffff) 50%,
+        var(--post-panel-tint, #fff) 50%,
         transparent
     );
     backdrop-filter: blur(4px);

@@ -33,6 +33,9 @@ class AiInsightService implements AiInsightServiceContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return PostAiInsights
      */
     public function forPost(Post $post, ?User $viewer = null, ?int $visibleCommentCount = null): PostAiInsights
     {
@@ -44,11 +47,11 @@ class AiInsightService implements AiInsightServiceContract
             $payload = TypeCast::array($result->payload);
             $toolCode = $result->tool_code instanceof AiToolCode
                 ? $result->tool_code
-                : AiToolCode::tryFrom(TypeCast::string($result->tool_code));
+                : AiToolCode::tryFrom(TypeCast::string($result->tool_code)) ?? AiToolCode::CommentSummary;
 
             return new AiInsightItem(
-                toolCode: $toolCode ?? AiToolCode::CommentSummary,
-                label: ($toolCode ?? AiToolCode::CommentSummary)->label(),
+                toolCode: $toolCode,
+                label: $toolCode->label(),
                 summary: TypeCast::string($payload['summary'] ?? '', ''),
                 completedAt: $result->completed_at,
             );

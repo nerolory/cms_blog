@@ -17,6 +17,7 @@ readonly class SiteSettingsData extends AbstractData
      * Собирает DTO из состояния формы Filament.
      *
      * @param  array<string, mixed>  $state
+     * @return self
      */
     public static function fromFilament(array $state): self
     {
@@ -26,6 +27,8 @@ readonly class SiteSettingsData extends AbstractData
     }
 
     /**
+     * to form state.
+     *
      * @return array<string, mixed>
      */
     public function toFormState(): array

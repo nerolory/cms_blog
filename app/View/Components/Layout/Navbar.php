@@ -12,6 +12,10 @@ use Illuminate\View\Component;
 
 /**
  * Верхняя навигация публичного сайта.
+
+ *
+ * @property-read TokenWalletServiceContract $tokenWallets
+ * @property-read SiteSettingsServiceContract $siteSettings
  */
 class Navbar extends Component
 {
@@ -22,6 +26,9 @@ class Navbar extends Component
 
     /**
      * Возвращает представление компонента.
+
+     *
+     * @return View
      */
     public function render(): View
     {

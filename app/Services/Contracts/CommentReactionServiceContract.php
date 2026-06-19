@@ -12,22 +12,37 @@ use Illuminate\Support\Collection;
  */
 interface CommentReactionServiceContract
 {
+    /**
+     * toggle.
+     *
+     * @param  CommentReactionData  $data
+     * @return ?CommentReaction
+     */
     public function toggle(CommentReactionData $data): ?CommentReaction;
 
     /**
+     * summaries for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @param  ?int  $userId
      * @return Collection<int, CommentReactionSummary>
      */
-    public function summariesForComments(array $commentIds, ?int $userId): Collection;
+    public function summariesForComments(Collection $commentIds, ?int $userId): Collection;
 
     /**
-     * @param  list<int>  $commentIds
-     * @return array<int, array<string, int>>
+     * aggregate counts for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @return Collection<int, Collection<string, int>>
      */
-    public function aggregateCountsForComments(array $commentIds): array;
+    public function aggregateCountsForComments(Collection $commentIds): Collection;
 
     /**
-     * @param  list<int>  $commentIds
-     * @return array<int, string>
+     * user reactions for comments.
+     *
+     * @param  Collection<int, int>  $commentIds
+     * @param  int  $userId
+     * @return Collection<int, string>
      */
-    public function userReactionsForComments(array $commentIds, int $userId): array;
+    public function userReactionsForComments(Collection $commentIds, int $userId): Collection;
 }

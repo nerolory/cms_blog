@@ -50,29 +50,35 @@ class PostViewRepository implements PostViewRepositoryContract
      */
     public function getCount(int $postId): int
     {
-        $counts = $this->getCountsForPosts([$postId]);
+        $counts = $this->getCountsForPosts(collect([$postId]));
 
         return TypeCast::int($counts->get($postId, 0));
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @param  Collection<int, int>  $postIds
+     * @return Collection<int, int>
      */
-    public function getCountsForPosts(array $postIds): Collection
+    public function getCountsForPosts(Collection $postIds): Collection
     {
-        if ($postIds === []) {
+        if ($postIds->isEmpty()) {
             return collect();
         }
 
+        $ids = array_values($postIds->map(fn (mixed $id): int => TypeCast::int($id))->all());
+
         try {
-            return $this->getCountsForPostsFromRedis($postIds);
+            return $this->getCountsForPostsFromRedis($ids);
         } catch (\Throwable) {
-            return $this->getCountsForPostsFromDatabase($postIds);
+            return $this->getCountsForPostsFromDatabase($ids);
         }
     }
 
     /**
-     * Сбрасывает отложенные счётчики просмотров (legacy pending до write-through).
+     * Сбрасывает отложенные счётчики просмотров (legacy pending до
+     * write-through).
      *
      * @return Collection<int, int>
      */
@@ -113,7 +119,7 @@ class PostViewRepository implements PostViewRepositoryContract
         $missingIds = [];
         foreach ($postIds as $index => $postId) {
             $cached = $cachedTotals[$index] ?? false;
-            if ($cached === false || $cached === null) {
+            if ($cached === false || $cached === '') {
                 $missingIds[] = $postId;
             }
         }

@@ -21,6 +21,8 @@ use Illuminate\Support\Collection;
  * @property-read PostViewRepositoryContract $views
  * @property-read CommentRepositoryContract $comments
  * @property-read ReactionRepositoryContract $reactions
+
+ * @property-read PostEngagementVersionServiceContract $engagementVersions
  */
 class PostViewService implements PostViewServiceContract
 {
@@ -65,18 +67,21 @@ class PostViewService implements PostViewServiceContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return Collection<int, PostListEngagementItem>
      */
-    public function getListingEngagementForPostIds(array $postIds): Collection
+    public function getListingEngagementForPostIds(Collection $postIds): Collection
     {
-        if ($postIds === []) {
+        if ($postIds->isEmpty()) {
             return collect();
         }
 
+        $ids = $postIds->values()->all();
         $viewCounts = $this->views->getCountsForPosts($postIds);
         $reactionCounts = $this->reactions->countsForPosts($postIds);
 
         $items = collect();
-        foreach ($postIds as $postId) {
+        foreach ($ids as $postId) {
             $id = TypeCast::int($postId);
             $items->put($id, new PostListEngagementItem(
                 viewsCount: TypeCast::int($viewCounts->get($id, 0)),

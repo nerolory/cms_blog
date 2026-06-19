@@ -1,18 +1,20 @@
 <?php
 
 declare(strict_types=1);
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Http\Request;
 
 require __DIR__.'/../vendor/autoload.php';
 
 $app = require __DIR__.'/../bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Kernel::class)->bootstrap();
 
 $failures = [];
 
 /** @var Illuminate\Contracts\Http\Kernel $kernel */
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
-$postsRequest = Illuminate\Http\Request::create('/posts', 'GET');
+$postsRequest = Request::create('/posts', 'GET');
 $postsResponse = $kernel->handle($postsRequest);
 $postsBody = (string) $postsResponse->getContent();
 

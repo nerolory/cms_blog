@@ -20,6 +20,9 @@ class PermissionRepository implements PermissionRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return Permission
      */
     public function findOrCreate(string $name, string $guard = 'web'): Permission
     {
@@ -44,6 +47,8 @@ class PermissionRepository implements PermissionRepositoryContract
 
     /**
      * {@inheritdoc}
+     *
+     * @return Collection<int, string>
      */
     public function allPermissionNames(string $guard = 'web'): Collection
     {

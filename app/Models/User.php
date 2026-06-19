@@ -40,7 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Post> $posts
  * @property-read UserTokenWallet|null $tokenWallet
  */
-#[Fillable(['name', 'email', 'password', 'theme', 'locale', 'avatar_path'])]
+#[Fillable(['name', 'email', 'password', 'theme', 'locale', 'avatar_path', 'email_verified_at', 'account_status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
@@ -143,6 +143,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     /**
      * URL аватара в Filament (локальный storage, без ui-avatars.com).
+
+     *
+     * @return ?string
      */
     public function getFilamentAvatarUrl(): ?string
     {

@@ -101,7 +101,8 @@ class AiSettingsRepository implements AiSettingsRepositoryContract
         $records = $this->setting->newQuery()->whereIn('key', $keyValues)->pluck('value', 'key');
         $values = [];
         foreach ($keys as $key) {
-            $values[$key->value] = $records->get($key->value);
+            $raw = $records->get($key->value);
+            $values[$key->value] = is_string($raw) || $raw === null ? $raw : TypeCast::nullableString($raw);
         }
 
         return $values;

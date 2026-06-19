@@ -5,8 +5,6 @@ namespace App\Http\Requests;
 use App\Enums\ReactionType;
 use App\Http\Requests\Concerns\InjectsPostService;
 use App\Http\Requests\Concerns\ResolvesPostFromRoute;
-use App\Models\Post;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,6 +16,11 @@ class StoreCommentReactionRequest extends FormRequest
     use InjectsPostService;
     use ResolvesPostFromRoute;
 
+    /**
+     * Проверяет право на выполнение запроса.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         $user = $this->user();
@@ -26,6 +29,8 @@ class StoreCommentReactionRequest extends FormRequest
     }
 
     /**
+     * Возвращает правила валидации.
+     *
      * @return array<string, mixed>
      */
     public function rules(): array

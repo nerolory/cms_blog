@@ -7,25 +7,25 @@ use App\Filament\Widgets\ModerationSlaWidget;
 use App\Http\Middleware\SetLocale;
 use App\Services\Contracts\MailSettingsServiceContract;
 use App\Services\Contracts\SiteSettingsServiceContract;
+use App\Support\Database\SchemaInspector;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use App\Support\Database\SchemaInspector;
-use Illuminate\Contracts\View\View;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
@@ -73,7 +73,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([Authenticate::class])
             ->userMenuItems([
-                MenuItem::make()
+                Action::make('public_site')
                     ->label(__('layout.nav.public_site'))
                     ->url(fn (): string => route('home'))
                     ->icon('heroicon-o-globe-alt')

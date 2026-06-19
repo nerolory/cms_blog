@@ -59,6 +59,8 @@ class UserFactory extends Factory
     }
 
     /**
+     * configure.
+     *
      * @return static
      */
     public function configure(): static

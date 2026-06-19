@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Enums\CommentStatus;
 use App\Models\Post;
 use App\Models\PostComment;
+use App\Repositories\Contracts\CommentRepositoryContract;
 use App\Services\CommentService;
+use App\Services\Contracts\CommentServiceContract;
+use App\Support\TypeCast;
 use Tests\Concerns\RefreshDatabase;
 use Tests\Concerns\SeedsRoles;
 use Tests\TestCase;
@@ -18,12 +21,18 @@ class PostCommentsPaginationTest extends TestCase
     use RefreshDatabase;
     use SeedsRoles;
 
+    /**
+     * Подготавливает окружение теста.
+     */
     protected function setUp(): void
     {
         parent::setUp();
         $this->seedRoles();
     }
 
+    /**
+     * test root comments api returns offset twenty with has more flag.
+     */
     public function test_root_comments_api_returns_offset_twenty_with_has_more_flag(): void
     {
         $author = $this->createAuthorUser();
@@ -48,9 +57,12 @@ class PostCommentsPaginationTest extends TestCase
         $secondPage->assertOk();
         $secondPage->assertJsonPath('has_more', false);
         $secondPage->assertJsonPath('next_offset', 25);
-        $this->assertSame(5, substr_count((string) $secondPage->json('html'), 'data-comment-thread'));
+        $this->assertSame(5, substr_count(TypeCast::string($secondPage->json('html')), 'data-comment-thread'));
     }
 
+    /**
+     * test root comments are ordered newest first.
+     */
     public function test_root_comments_are_ordered_newest_first(): void
     {
         $author = $this->createAuthorUser();
@@ -71,21 +83,24 @@ class PostCommentsPaginationTest extends TestCase
         ]);
         PostComment::query()->whereKey($older->id)->update(['created_at' => now()->subHour()]);
         PostComment::query()->whereKey($newer->id)->update(['created_at' => now()]);
-        app(\App\Services\Contracts\CommentServiceContract::class)->forgetSectionCacheForPost($post->id);
+        app(CommentServiceContract::class)->forgetSectionCacheForPost($post->id);
 
-        $roots = app(\App\Repositories\Contracts\CommentRepositoryContract::class)
+        $roots = app(CommentRepositoryContract::class)
             ->getVisibleRootCommentsForPost($post->id, 20, 0);
         $this->assertSame('Newer root', $roots->first()?->body);
         $this->assertSame('Older root', $roots->last()?->body);
 
         $response = $this->getJson(route('posts.comments.index', $post));
-        $html = (string) $response->json('html');
+        $html = TypeCast::string($response->json('html'));
         $this->assertMatchesRegularExpression('/Newer root[\s\S]*Older root/', $html);
 
         $show = (string) $this->get(route('posts.show', $post))->getContent();
         $this->assertMatchesRegularExpression('/Newer root[\s\S]*Older root/', $show);
     }
 
+    /**
+     * test thread replies stay ordered oldest first.
+     */
     public function test_thread_replies_stay_ordered_oldest_first(): void
     {
         $author = $this->createAuthorUser();
@@ -116,13 +131,13 @@ class PostCommentsPaginationTest extends TestCase
         ]);
         PostComment::query()->whereKey($newerReply->id)->update(['created_at' => now()]);
 
-        $replies = app(\App\Repositories\Contracts\CommentRepositoryContract::class)
+        $replies = app(CommentRepositoryContract::class)
             ->getVisibleThreadReplies($root->id, 20, 0);
         $this->assertSame('Older reply', $replies->first()?->body);
         $this->assertSame('Newer reply', $replies->last()?->body);
 
         $response = $this->getJson(route('posts.comments.thread', [$post, $root->id]));
-        $html = (string) $response->json('html');
+        $html = TypeCast::string($response->json('html'));
         $this->assertMatchesRegularExpression('/Older reply[\s\S]*Newer reply/', $html);
     }
 }

@@ -35,10 +35,10 @@ interface PostViewServiceContract
     /**
      * Сводка просмотров и реакций для карточек в списке постов.
      *
-     * @param  list<int>  $postIds
+     * @param  Collection<int, int>  $postIds
      * @return Collection<int, PostListEngagementItem>
      */
-    public function getListingEngagementForPostIds(array $postIds): Collection;
+    public function getListingEngagementForPostIds(Collection $postIds): Collection;
 
     /**
      * Сбрасывает накопленные в Redis счётчики просмотров в БД.

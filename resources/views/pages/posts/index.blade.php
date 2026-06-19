@@ -49,9 +49,8 @@
                         </div>
 
                         @php($engagement = ($listingEngagement ?? collect())->get((int) $post->id))
-                        <x-post.list-engagement
-                            :engagement="$engagement ?? new \App\DTO\PostListEngagementItem(viewsCount: 0, reactionCounts: collect())"
-                            class="mt-2" />
+                        <x-post.list-engagement :engagement="$engagement ??
+                            new \App\DTO\PostListEngagementItem(viewsCount: 0, reactionCounts: collect())" class="mt-2" />
                     </div>
                 </article>
             @endforeach

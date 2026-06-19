@@ -69,7 +69,8 @@ class FilamentAdminTest extends TestCase
     }
 
     /**
-     * В админке есть ссылка «На сайт» рядом с логотипом (сайдбар и топбар).
+     * В админке есть ссылка «На сайт» рядом с логотипом (сайдбар
+     * и топбар).
      */
     public function test_admin_topbar_shows_public_site_link(): void
     {

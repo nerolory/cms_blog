@@ -24,6 +24,9 @@ class SiteSettingsService implements SiteSettingsServiceContract
 
     /**
      * {@inheritDoc}
+
+     *
+     * @return string
      */
     public function siteName(): string
     {
@@ -32,6 +35,9 @@ class SiteSettingsService implements SiteSettingsServiceContract
 
     /**
      * {@inheritDoc}
+
+     *
+     * @return SiteSettingsData
      */
     public function settings(): SiteSettingsData
     {
@@ -51,6 +57,9 @@ class SiteSettingsService implements SiteSettingsServiceContract
 
     /**
      * {@inheritDoc}
+
+     *
+     * @return SiteSettingsData
      */
     public function saveSettings(SiteSettingsData $data): SiteSettingsData
     {

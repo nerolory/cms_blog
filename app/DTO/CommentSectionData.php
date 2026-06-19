@@ -12,6 +12,9 @@ use Illuminate\Support\Collection;
  * @property-read Collection<int, int> $replyCounts
  * @property-read Collection<int, CommentReactionSummary> $reactionSummaries
  * @property-read int $totalVisibleComments
+
+ * @property-read bool $hasMoreRoots
+ * @property-read int $totalRoots
  */
 readonly class CommentSectionData
 {

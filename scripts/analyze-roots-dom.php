@@ -1,15 +1,17 @@
 <?php
 
 declare(strict_types=1);
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Http\Request;
 
 require __DIR__.'/../vendor/autoload.php';
 
 $app = require __DIR__.'/../bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Kernel::class)->bootstrap();
 
 $slug = $argv[1] ?? 'verify-engagement-post';
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-$response = $kernel->handle(Illuminate\Http\Request::create('/posts/'.$slug, 'GET'));
+$response = $kernel->handle(Request::create('/posts/'.$slug, 'GET'));
 $html = (string) $response->getContent();
 
 if (! preg_match('/data-comment-roots[^>]*>(.*)<div[^>]*data-comment-roots-sentinel/s', $html, $match)) {

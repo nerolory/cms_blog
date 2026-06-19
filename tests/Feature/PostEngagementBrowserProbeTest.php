@@ -18,12 +18,18 @@ class PostEngagementBrowserProbeTest extends TestCase
     use RefreshDatabase;
     use SeedsRoles;
 
+    /**
+     * Подготавливает окружение теста.
+     */
     protected function setUp(): void
     {
         parent::setUp();
         $this->seedRoles();
     }
 
+    /**
+     * test post reaction via form fields returns engagement json.
+     */
     public function test_post_reaction_via_form_fields_returns_engagement_json(): void
     {
         $author = $this->createAuthorUser();

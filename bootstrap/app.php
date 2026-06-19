@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ApplyAudienceCacheHeaders;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\ConditionalGet;
 use App\Http\Middleware\EnsureAccountIsActive;
@@ -10,6 +11,7 @@ use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SyncBrowserCacheVersion;
 use App\Jobs\PersistPostViewCountsJob;
+use App\Services\Contracts\SiteOperationalServiceContract;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('posts:publish-scheduled')->everyMinute();
         $schedule->job(new PersistPostViewCountsJob)->everyMinute();
         $schedule->call(static function (): void {
-            app(\App\Services\Contracts\SiteOperationalServiceContract::class)->assess();
+            app(SiteOperationalServiceContract::class)->assess();
         })->everyThirtySeconds();
     })
     ->withMiddleware(function (Middleware $middleware): void {
@@ -44,6 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             SyncBrowserCacheVersion::class,
             EnsureSiteOperational::class,
+            ApplyAudienceCacheHeaders::class,
         ]);
 
         $middleware->throttleApi('api');

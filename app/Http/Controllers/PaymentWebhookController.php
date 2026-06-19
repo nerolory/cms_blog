@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 /**
  * Webhook платёжного провайдера (без CSRF, только HMAC).
+
+ *
+ * @property-read PaymentWebhookServiceContract $webhooks
  */
 class PaymentWebhookController extends Controller
 {

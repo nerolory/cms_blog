@@ -1,9 +1,4 @@
-@props([
-    'post',
-    'comment',
-    'reactionSummary' => null,
-    'indented' => false,
-])
+@props(['post', 'comment', 'reactionSummary' => null, 'indented' => false])
 
 @php
     $summary = $reactionSummary ?? new \App\DTO\CommentReactionSummary(counts: collect());
@@ -32,8 +27,8 @@
 
             <div class="d-flex flex-wrap align-items-center post-comment__actions mb-2">
                 @auth
-                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none"
-                        data-comment-reply-toggle data-target="reply-form-{{ $comment->id }}">
+                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" data-comment-reply-toggle
+                        data-target="reply-form-{{ $comment->id }}">
                         {{ __('engagement.comment.reply') }}
                     </button>
                 @endauth

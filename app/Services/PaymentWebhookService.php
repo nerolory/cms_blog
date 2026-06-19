@@ -17,6 +17,13 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Verified webhook: зачисление токенов после purchase.
+
+ *
+ * @property-read PaymentWebhookSigner $signer
+ * @property-read PaymentIntentRepositoryContract $paymentIntents
+ * @property-read UserTokenWalletRepositoryContract $wallets
+ * @property-read TokenPackageRepositoryContract $packages
+ * @property-read UserRepositoryContract $users
  */
 class PaymentWebhookService implements PaymentWebhookServiceContract
 {
@@ -27,6 +34,9 @@ class PaymentWebhookService implements PaymentWebhookServiceContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return ?TokenTransaction
      */
     public function processSignedPayload(string $rawPayload, string $signatureHeader): ?TokenTransaction
     {
@@ -52,6 +62,9 @@ class PaymentWebhookService implements PaymentWebhookServiceContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return TokenTransaction
      */
     public function confirmMockPayment(PaymentIntent $intent, PaymentResultData $payment): TokenTransaction
     {

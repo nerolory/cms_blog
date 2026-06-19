@@ -10,7 +10,11 @@ final class CompactNumberFormatter
     private const int COMPACT_FROM = 10_000;
 
     /**
-     * Форматирует число: до порога — с разделителями тысяч, выше — K/M/B.
+     * Форматирует число: до порога — с разделителями тысяч, выше
+     * — K/M/B.
+
+     *
+     * @return string
      */
     public static function format(int $value): string
     {

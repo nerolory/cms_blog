@@ -5,14 +5,17 @@ declare(strict_types=1);
 require __DIR__.'/../vendor/autoload.php';
 
 $app = require __DIR__.'/../bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Kernel::class)->bootstrap();
 
-use App\Models\Post;
-use App\Models\PostComment;
-use App\Models\User;
 use App\Enums\CommentStatus;
 use App\Enums\PostStatus;
 use App\Enums\PostVisibility;
+use App\Models\Post;
+use App\Models\PostComment;
+use App\Models\User;
+use App\Services\Contracts\CommentServiceContract;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
 Artisan::call('view:clear');
@@ -51,13 +54,13 @@ PostComment::query()->create([
 ]);
 
 try {
-    app(App\Services\Contracts\CommentServiceContract::class)->forgetSectionCacheForPost($post->id);
-} catch (\Throwable) {
+    app(CommentServiceContract::class)->forgetSectionCacheForPost($post->id);
+} catch (Throwable) {
 }
 
 /** @var Illuminate\Contracts\Http\Kernel $kernel */
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-$request = Illuminate\Http\Request::create('/posts/'.$post->slug, 'GET');
+$request = Request::create('/posts/'.$post->slug, 'GET');
 $response = $kernel->handle($request);
 $body = (string) $response->getContent();
 

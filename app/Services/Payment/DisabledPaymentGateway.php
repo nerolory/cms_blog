@@ -13,6 +13,9 @@ class DisabledPaymentGateway implements PaymentGatewayContract
 {
     /**
      * {@inheritdoc}
+
+     *
+     * @return PaymentResultData
      */
     public function charge(PaymentChargeData $charge): PaymentResultData
     {

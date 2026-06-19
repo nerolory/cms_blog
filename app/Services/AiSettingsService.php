@@ -22,6 +22,11 @@ class AiSettingsService implements AiSettingsServiceContract
 
     public function __construct(protected AiSettingsRepositoryContract $aiSettingsRepository) {}
 
+    /**
+     * settings.
+     *
+     * @return AiSettingsData
+     */
     public function settings(): AiSettingsData
     {
         if ($this->cachedSettings instanceof AiSettingsData) {
@@ -38,6 +43,9 @@ class AiSettingsService implements AiSettingsServiceContract
         return $this->cachedSettings = $this->settingsFromPayload($payload);
     }
 
+    /**
+     * forget settings cache.
+     */
     public function forgetSettingsCache(): void
     {
         Cache::forget(ApplicationCacheKeys::AI_SETTINGS);

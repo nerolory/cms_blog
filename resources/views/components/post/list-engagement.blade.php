@@ -3,8 +3,8 @@
 @php($viewsLabel = __('engagement.views', ['count' => number_format($engagement->viewsCount)]))
 
 <div {{ $attributes->merge(['class' => 'post-card__stats d-flex flex-wrap gap-2']) }}>
-    <span class="badge border post-card__views d-inline-flex align-items-center"
-        title="{{ $viewsLabel }}" aria-label="{{ $viewsLabel }}">
+    <span class="badge border post-card__views d-inline-flex align-items-center" title="{{ $viewsLabel }}"
+        aria-label="{{ $viewsLabel }}">
         <svg class="post-card__views-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
             aria-hidden="true">
             <path

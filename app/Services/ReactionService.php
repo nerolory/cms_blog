@@ -15,6 +15,8 @@ use InvalidArgumentException;
  * Сервис reaction.
  *
  * @property-read ReactionRepositoryContract $reactions
+
+ * @property-read PostEngagementVersionServiceContract $engagementVersions
  */
 class ReactionService implements ReactionServiceContract
 {
@@ -50,13 +52,9 @@ class ReactionService implements ReactionServiceContract
     }
 
     /**
-     * counts for post.
-     *
-     * @param  int  $postId  id
-     */ /**
      * Возвращает счётчики реакций для поста.
      *
-     * @return Collection<int, int>
+     * @return Collection<string, int>
      */
     public function countsForPost(int $postId): Collection
     {

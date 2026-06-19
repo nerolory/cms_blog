@@ -27,6 +27,9 @@ class SeoRepository implements SeoRepositoryContract
 
     /**
      * Обновляет seo.
+
+     *
+     * @return Post
      */
     public function updateSeo(Post $post, SeoData $data): Post
     {
@@ -48,6 +51,9 @@ class SeoRepository implements SeoRepositoryContract
 
     /**
      * Возвращает latest public listing timestamp.
+
+     *
+     * @return ?DateTimeInterface
      */
     public function getLatestPublicListingTimestamp(): ?DateTimeInterface
     {

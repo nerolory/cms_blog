@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
 class PrepareEngagementSpaRequest
 {
     /**
+     * Подготавливает Accept для SPA-запросов engagement.
+     *
+     * @param  Request  $request
+     * @param  Closure  $next
      * @return Response
      */
     public function handle(Request $request, Closure $next): Response

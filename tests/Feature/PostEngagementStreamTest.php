@@ -16,12 +16,18 @@ class PostEngagementStreamTest extends TestCase
     use RefreshDatabase;
     use SeedsRoles;
 
+    /**
+     * Подготавливает окружение теста.
+     */
     protected function setUp(): void
     {
         parent::setUp();
         $this->seedRoles();
     }
 
+    /**
+     * test engagement stream returns event stream headers.
+     */
     public function test_engagement_stream_returns_event_stream_headers(): void
     {
         $author = $this->createAuthorUser();
@@ -32,6 +38,9 @@ class PostEngagementStreamTest extends TestCase
         $response->assertHeader('Content-Type', 'text/event-stream; charset=UTF-8');
     }
 
+    /**
+     * test engagement version bumps on comment create.
+     */
     public function test_engagement_version_bumps_on_comment_create(): void
     {
         $author = $this->createAuthorUser();

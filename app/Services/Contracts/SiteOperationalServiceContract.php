@@ -20,11 +20,17 @@ interface SiteOperationalServiceContract
 
     /**
      * Проверяет critical operational.
+
+     *
+     * @return bool
      */
     public function isCriticalOperational(): bool;
 
     /**
      * Возвращает закэшированный флаг criticalOk без probe (null — кэш пуст).
+
+     *
+     * @return ?bool
      */
     public function getCachedCriticalOk(): ?bool;
 

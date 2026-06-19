@@ -15,6 +15,8 @@ use Illuminate\Http\RedirectResponse;
  *
  * @property-read ReactionServiceContract $reactionService
  * @property-read PostServiceContract $postService
+
+ * @property-read EngagementMutationResponder $engagementResponder
  */
 class ReactionController extends Controller
 {

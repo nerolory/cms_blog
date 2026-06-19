@@ -12,6 +12,9 @@ interface PostShowEngagementServiceContract
 {
     /**
      * Содержимое внутри data-post-engagement-app (без обёртки).
+
+     *
+     * @return string
      */
     public function renderAppInnerHtml(Post $post, ?User $viewer): string;
 }

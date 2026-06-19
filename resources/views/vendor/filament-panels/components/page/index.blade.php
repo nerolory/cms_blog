@@ -11,33 +11,24 @@
 @endphp
 
 <div
-    {{
-        $attributes->class([
-            'fi-page',
-            'fi-height-full' => $fullHeight,
-            'fi-page-has-sub-navigation' => $subNavigation,
-            "fi-page-has-sub-navigation-{$subNavigationPosition->value}" => $subNavigation,
-            ...$this->getPageClasses(),
-        ])
-    }}
->
+    {{ $attributes->class([
+        'fi-page',
+        'fi-height-full' => $fullHeight,
+        'fi-page-has-sub-navigation' => $subNavigation,
+        "fi-page-has-sub-navigation-{$subNavigationPosition->value}" => $subNavigation,
+        ...$this->getPageClasses(),
+    ]) }}>
     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_START, scopes: $this->getRenderHookScopes()) }}
 
     <div class="fi-page-header-main-ctn">
         @if ($subNavigation)
-            <div
-                class="fi-page-main-sub-navigation-mobile-menu-render-hook-ctn"
-            >
+            <div class="fi-page-main-sub-navigation-mobile-menu-render-hook-ctn">
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_MOBILE_MENU_BEFORE, scopes: $this->getRenderHookScopes()) }}
             </div>
 
-            <x-filament-panels::page.sub-navigation.mobile-menu
-                :navigation="$subNavigation"
-            />
+            <x-filament-panels::page.sub-navigation.mobile-menu :navigation="$subNavigation" />
 
-            <div
-                class="fi-page-main-sub-navigation-mobile-menu-render-hook-ctn"
-            >
+            <div class="fi-page-main-sub-navigation-mobile-menu-render-hook-ctn">
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_MOBILE_MENU_AFTER, scopes: $this->getRenderHookScopes()) }}
             </div>
         @endif
@@ -54,13 +45,8 @@
             @endphp
 
             @if (filled($headerActions) || $breadcrumbs || filled($heading) || filled($subheading))
-                <x-filament-panels::header
-                    :actions="$headerActions"
-                    :actions-alignment="$headerActionsAlignment"
-                    :breadcrumbs="$breadcrumbs"
-                    :heading="$heading"
-                    :subheading="$subheading"
-                >
+                <x-filament-panels::header :actions="$headerActions" :actions-alignment="$headerActionsAlignment" :breadcrumbs="$breadcrumbs" :heading="$heading"
+                    :subheading="$subheading">
                     @if ($heading instanceof \Illuminate\Contracts\Support\Htmlable)
                         <x-slot name="heading">
                             {{ $heading }}
@@ -81,9 +67,7 @@
                 @if ($subNavigationPosition === SubNavigationPosition::Start)
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_START_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
-                    <x-filament-panels::page.sub-navigation.sidebar
-                        :navigation="$subNavigation"
-                    />
+                    <x-filament-panels::page.sub-navigation.sidebar :navigation="$subNavigation" />
 
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_START_AFTER, scopes: $this->getRenderHookScopes()) }}
                 @endif
@@ -91,9 +75,7 @@
                 @if ($subNavigationPosition === SubNavigationPosition::Top)
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_TOP_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
-                    <x-filament-panels::page.sub-navigation.tabs
-                        :navigation="$subNavigation"
-                    />
+                    <x-filament-panels::page.sub-navigation.tabs :navigation="$subNavigation" />
 
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_TOP_AFTER, scopes: $this->getRenderHookScopes()) }}
                 @endif
@@ -118,9 +100,7 @@
             @if ($subNavigation && $subNavigationPosition === SubNavigationPosition::End)
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_END_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
-                <x-filament-panels::page.sub-navigation.sidebar
-                    :navigation="$subNavigation"
-                />
+                <x-filament-panels::page.sub-navigation.sidebar :navigation="$subNavigation" />
 
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_SUB_NAVIGATION_END_AFTER, scopes: $this->getRenderHookScopes()) }}
             @endif
@@ -131,18 +111,18 @@
         @endif
     </div>
 
-    @if (! ($this instanceof \Filament\Tables\Contracts\HasTable))
+    @if (!($this instanceof \Filament\Tables\Contracts\HasTable))
         <x-filament-actions::modals />
     @elseif ($this->isTableLoaded() && filled($this->defaultTableAction))
         <div
-            wire:init="mountAction(@js($this->defaultTableAction) , @if (filled($this->defaultTableActionArguments)) @js($this->defaultTableActionArguments) @else {} @endif , @js(['table' => true, 'recordKey' => $this->defaultTableActionRecord]))"
-        ></div>
+            wire:init="mountAction(@js($this->defaultTableAction) , @if (filled($this->defaultTableActionArguments)) @js($this->defaultTableActionArguments) @else {} @endif , @js(['table' => true, 'recordKey' => $this->defaultTableActionRecord]))">
+        </div>
     @endif
 
     @if (filled($this->defaultAction))
         <div
-            wire:init="mountAction(@js($this->defaultAction) @if (filled($this->defaultActionArguments) || filled($this->defaultActionContext)) , @if (filled($this->defaultActionArguments)) @js($this->defaultActionArguments) @else {} @endif @endif @if (filled($this->defaultActionContext)) , @js($this->defaultActionContext) @endif)"
-        ></div>
+            wire:init="mountAction(@js($this->defaultAction) @if (filled($this->defaultActionArguments) || filled($this->defaultActionContext)) , @if (filled($this->defaultActionArguments)) @js($this->defaultActionArguments) @else {} @endif @endif @if (filled($this->defaultActionContext)) , @js($this->defaultActionContext) @endif)">
+        </div>
     @endif
 
     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_END, scopes: $this->getRenderHookScopes()) }}
@@ -161,13 +141,15 @@
         @else
             @script
                 <script {!! csp_nonce_attribute() !!}>
-                    setUpUnsavedDataChangesAlert({ $wire })
+                    setUpUnsavedDataChangesAlert({
+                        $wire
+                    })
                 </script>
             @endscript
         @endif
     @endif
 
-    @if (! app()->hasDebugModeEnabled())
+    @if (!app()->hasDebugModeEnabled())
         @script
             <script {!! csp_nonce_attribute() !!}>
                 window.filamentErrorNotifications = @js($this->hasErrorNotifications() ? $this->getErrorNotifications() : null)

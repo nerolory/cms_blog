@@ -26,6 +26,8 @@ class CommentReaction extends Model
     protected $casts = ['type' => ReactionType::class];
 
     /**
+     * comment.
+     *
      * @return BelongsTo<PostComment, $this>
      */
     public function comment(): BelongsTo
@@ -34,6 +36,8 @@ class CommentReaction extends Model
     }
 
     /**
+     * user.
+     *
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
