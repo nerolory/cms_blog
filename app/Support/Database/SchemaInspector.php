@@ -36,10 +36,6 @@ final class SchemaInspector
      */
     public static function hasSettingsTable(): bool
     {
-        if (! self::isEnabled()) {
-            return true;
-        }
-
         if (app()->runningUnitTests()) {
             return self::probeSettingsTable();
         }
@@ -61,10 +57,6 @@ final class SchemaInspector
      */
     public static function hasSiteTemplatesTable(): bool
     {
-        if (! self::isEnabled()) {
-            return true;
-        }
-
         if (app()->runningUnitTests()) {
             return self::probeSiteTemplatesTable();
         }

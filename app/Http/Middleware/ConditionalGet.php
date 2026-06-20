@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Conditional GET (ETag, Last-Modified) для маршрутов с HttpCacheContext.
- * ETag включает id зрителя — кэш гостя и каждого пользователя разделён.
+ * ETag включает id зрителя — кэш гостя и пользователя разделён.
  */
 class ConditionalGet
 {

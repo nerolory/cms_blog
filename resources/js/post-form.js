@@ -19,16 +19,8 @@ if (form && saveButton && saveWrapper) {
         hasUserId: Boolean(form.elements.user_id),
     });
 
-    /** @type {Record<string, string>} Initial field values used to detect changes. */
-    const baselineState = Object.fromEntries([
-        ...trackedFields.map((name) => [name, readFieldValue(name)]),
-        ['is_published', readPublishedValue()],
-        ['remove_featured_image', readCheckboxValue('remove_featured_image')],
-        ['remove_background_image', readCheckboxValue('remove_background_image')],
-        ['use_article_theme', readCheckboxValue('use_article_theme')],
-        ['featured_image', ''],
-        ['background_image', ''],
-    ]);
+    /** @type {Record<string, string> | null} Baseline after editor/fields are ready. */
+    let baselineState = null;
 
     const tooltip = disabledHint
         ? new Tooltip(saveWrapper, {
@@ -60,7 +52,12 @@ if (form && saveButton && saveWrapper) {
             return editor ? editor.getContent() : (form.elements.body?.value ?? '');
         }
 
-        return form.elements[name]?.value ?? '';
+        const element = form.elements[name];
+        if (element instanceof HTMLInputElement && element.type === 'checkbox') {
+            return readCheckboxValue(name);
+        }
+
+        return element?.value ?? '';
     }
 
     /**
@@ -114,11 +111,32 @@ if (form && saveButton && saveWrapper) {
     }
 
     /**
+     * Snapshot baseline once the body field (TinyMCE or textarea) is readable.
+     *
+     * @returns {void}
+     */
+    function captureBaseline() {
+        syncRichText();
+        baselineState = Object.fromEntries([
+            ...trackedFields.map((name) => [name, readFieldValue(name)]),
+            ['is_published', readPublishedValue()],
+            ['remove_featured_image', readCheckboxValue('remove_featured_image')],
+            ['remove_background_image', readCheckboxValue('remove_background_image')],
+            ['featured_image', ''],
+            ['background_image', ''],
+        ]);
+    }
+
+    /**
      * Determine whether any tracked field differs from the baseline snapshot.
      *
      * @returns {boolean} True when the form has unsaved changes.
      */
     function hasChanges() {
+        if (baselineState === null) {
+            return false;
+        }
+
         return hasDirtyFields(baselineState, readFormState());
     }
 
@@ -165,6 +183,10 @@ if (form && saveButton && saveWrapper) {
                 textarea.dataset.dirtyListenerBound = 'true';
             }
 
+            if (baselineState === null) {
+                captureBaseline();
+            }
+
             updateSaveButton();
 
             return;
@@ -175,13 +197,39 @@ if (form && saveButton && saveWrapper) {
         if (!editor) {
             if (attempt < 50) {
                 window.setTimeout(() => attachBodyChangeListener(attempt + 1), 100);
+
+                return;
             }
+
+            if (baselineState === null) {
+                captureBaseline();
+            }
+
+            updateSaveButton();
 
             return;
         }
 
-        editor.on('change input undo redo SetContent', updateSaveButton);
-        updateSaveButton();
+        if (!editor._dirtyBaselineBound) {
+            editor.on('change input undo redo SetContent', updateSaveButton);
+            editor._dirtyBaselineBound = true;
+        }
+
+        const captureBaselineWhenReady = () => {
+            window.requestAnimationFrame(() => {
+                if (baselineState === null) {
+                    captureBaseline();
+                }
+
+                updateSaveButton();
+            });
+        };
+
+        if (editor.initialized) {
+            captureBaselineWhenReady();
+        } else {
+            editor.once('init', captureBaselineWhenReady);
+        }
     }
 
     form.addEventListener('input', updateSaveButton);
@@ -212,9 +260,9 @@ if (form && saveButton && saveWrapper) {
     });
 
     form.addEventListener('post-editor:reinitialized', () => {
+        baselineState = null;
         attachBodyChangeListener();
     });
 
     attachBodyChangeListener();
-    updateSaveButton();
 }

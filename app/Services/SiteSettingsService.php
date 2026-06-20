@@ -45,12 +45,16 @@ class SiteSettingsService implements SiteSettingsServiceContract
             return $this->cachedSettings;
         }
 
-        /** @var array{site_name: string} $payload */
-        $payload = Cache::remember(
-            ApplicationCacheKeys::SITE_BRANDING,
-            self::CACHE_TTL_SECONDS,
-            fn (): array => $this->brandingPayloadFromDatabase(),
-        );
+        try {
+            /** @var array{site_name: string} $payload */
+            $payload = Cache::remember(
+                ApplicationCacheKeys::SITE_BRANDING,
+                self::CACHE_TTL_SECONDS,
+                fn (): array => $this->brandingPayloadFromDatabase(),
+            );
+        } catch (\Throwable) {
+            $payload = ['site_name' => TypeCast::string(config('app.name', 'Laravel'))];
+        }
 
         return $this->cachedSettings = $this->settingsFromPayload($payload);
     }

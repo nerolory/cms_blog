@@ -4,23 +4,28 @@
 
 Файл: [`.github/workflows/code-quality.yml`](../.github/workflows/code-quality.yml)
 
-| Job | Что проверяет |
-|-----|----------------|
-| `php-quality` | `composer check:quality` — Pint, line-length, PHPDoc, PHPStan 9, composer audit |
-| `python-quality` | `ruff` + `pytest` в `ai-service/` |
-| `php-tests` | PHPUnit (`APP_ENV=testing`, SQLite in-memory) |
-| `php-tests-pgsql` | PostgreSQL integration — tsvector/GIN (`phpunit.integration.xml`) |
-| `frontend-quality` | ESLint, TypeScript, Vitest+coverage, Stylelint, W3C HTML, blade-formatter, Vite build, npm audit |
-| `e2e-smoke` | Playwright (smoke + form dirty-state) против `artisan serve` |
+| Job | Что проверяет | Зависимости на runner |
+|-----|----------------|------------------------|
+| `php-quality` | `composer check:quality` — Pint, line-length, PHPDoc, PHPStan 9, composer audit | PHP 8.3 |
+| `python-quality` | `ruff` + `pytest` в `ai-service/` | Python 3.12 |
+| `php-tests` | PHPUnit (`APP_ENV=testing`, SQLite in-memory) | PHP 8.3 + **ext-redis**, **Redis service** (`127.0.0.1:6379`), **Node 20**, `npm ci && npm run build` (manifest для `@vite`) |
+| `php-tests-pgsql` | PostgreSQL integration — tsvector/GIN (`phpunit.integration.xml`) | PHP 8.3 + **Postgres service** (`127.0.0.1:5432`) |
+| `frontend-quality` | ESLint, TypeScript, Vitest+coverage, Stylelint, W3C HTML, blade-formatter, Vite build, npm audit | Node 20 |
+| `e2e-smoke` | Playwright (smoke + form dirty-state) против `artisan serve` | PHP + Node, SQLite file, `npm run build`, **`SESSION_DRIVER=file`** (не `array` из `.env.testing`) |
 
 Триггеры: push и pull request в ветки `main`, `develop`.
 
 ## Локальный прогон (эквивалент CI)
 
 ```bash
-# PHP
-docker compose exec -T php composer check:php
-php artisan test
+# Полный прогон (frontend build перед PHP — иначе Vite manifest отсутствует в тестах)
+make ci
+# или scripts/ci.sh / scripts/ci.ps1
+
+# PHP unit (эквивалент job php-tests)
+npm ci && npm run build
+# Redis на 127.0.0.1:6379 (docker compose up redis -d или scripts/verify-github-ci.sh поднимет контейнер)
+REDIS_HOST=127.0.0.1 REDIS_PORT=6379 APP_ENV=testing php artisan test
 
 # Python
 cd ai-service && pip install -e ".[dev]" && ruff check . && pytest
@@ -31,15 +36,20 @@ php artisan test --configuration=phpunit.integration.xml
 # Frontend (на хосте)
 npm run check:frontend && npm run build
 
-# E2E (после migrate + E2eFixturesSeeder)
-php artisan migrate --force
-php artisan db:seed --class=E2eFixturesSeeder --force
-php artisan serve --host=127.0.0.1 --port=8000 &
+# E2E (после migrate + E2eFixturesSeeder; сессия между запросами — file, не array)
+mkdir -p storage/framework/sessions
+APP_ENV=testing DB_DATABASE=database/database.sqlite SESSION_DRIVER=file php artisan migrate --force
+APP_ENV=testing DB_DATABASE=database/database.sqlite SESSION_DRIVER=file \
+  php artisan db:seed --class=E2eFixturesSeeder --force
+npm run build
+APP_ENV=testing DB_DATABASE=database/database.sqlite SESSION_DRIVER=file \
+  php artisan serve --host=127.0.0.1 --port=8000 &
 npm run test:e2e
 ```
 
 Windows: [`scripts/ci.ps1`](../scripts/ci.ps1)  
-Linux/macOS: [`scripts/ci.sh`](../scripts/ci.sh) или `make ci`
+Linux/macOS: [`scripts/ci.sh`](../scripts/ci.sh) или `make ci`  
+Полная симуляция всех 6 jobs GitHub Actions: [`scripts/verify-github-ci.sh`](../scripts/verify-github-ci.sh)
 
 ### Почему frontend не в Docker
 

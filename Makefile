@@ -1,6 +1,6 @@
 .PHONY: ci ci-php ci-python ci-frontend ci-audit install install-tools verify-ui
 
-ci: ci-php ci-python ci-frontend ci-audit
+ci: ci-frontend ci-php ci-python ci-audit
 
 ci-php:
 	docker compose exec -T php composer check:php

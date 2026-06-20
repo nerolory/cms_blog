@@ -96,17 +96,19 @@ class AdminPanelProvider extends PanelProvider
 
     private function shouldEnableFilamentEmailVerification(): bool
     {
+        $fallback = (bool) config('mail-module.require_email_verification_default');
+
         try {
             if (! SchemaInspector::hasSettingsTable()) {
-                return (bool) config('mail-module.require_email_verification_default');
+                return $fallback;
             }
+
+            /** @var MailSettingsServiceContract $mailSettingsService */
+            $mailSettingsService = $this->app->make(MailSettingsServiceContract::class);
+
+            return $mailSettingsService->isEmailVerificationRequired();
         } catch (\Throwable) {
-            return (bool) config('mail-module.require_email_verification_default');
+            return $fallback;
         }
-
-        /** @var MailSettingsServiceContract $mailSettingsService */
-        $mailSettingsService = $this->app->make(MailSettingsServiceContract::class);
-
-        return $mailSettingsService->isEmailVerificationRequired();
     }
 }

@@ -62,7 +62,7 @@ class ConditionalGetTest extends TestCase
     }
 
     /**
-     * Авторизованный пользователь получает 304 при совпадении ETag на листинге.
+     * Auth-пользователь: 304 при совпадении ETag на листинге.
      */
     public function test_authenticated_posts_index_returns_304_when_etag_matches(): void
     {

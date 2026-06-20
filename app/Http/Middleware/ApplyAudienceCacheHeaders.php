@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ApplyAudienceCacheHeaders
 {
     /**
-     * Разделяет кэш гостя и каждой сессии авторизованного пользователя.
+     * Разделяет кэш гостя и auth-сессий на публичном сайте.
      *
      * @return Response
      */

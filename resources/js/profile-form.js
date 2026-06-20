@@ -16,11 +16,11 @@ if (form && saveButton && saveWrapper) {
     const disabledHint = form.dataset.saveDisabledHint ?? '';
     const trackedFields = [...PROFILE_TRACKED_FIELDS];
 
-    /** @type {Record<string, string>} Initial field values used to detect changes. */
+    /** @type {Record<string, string>} Initial field values from the rendered form. */
     const baselineState = {
-        name: form.dataset.initialName ?? '',
-        email: form.dataset.initialEmail ?? '',
-        theme: form.dataset.initialTheme ?? '',
+        name: form.elements.name?.value ?? '',
+        email: form.elements.email?.value ?? '',
+        theme: form.elements.theme?.value ?? 'default',
         password: '',
         password_confirmation: '',
     };

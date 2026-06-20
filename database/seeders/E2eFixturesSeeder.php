@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AccountStatus;
 use App\Enums\PostStatus;
 use App\Models\Category;
 use App\Models\Post;
@@ -28,8 +29,9 @@ class E2eFixturesSeeder extends Seeder
             CategorySeeder::class]);
 
         /** @var User $author */
-        $author = User::query()->firstOrCreate(['email' => self::AUTHOR_EMAIL], ['name' => 'E2E Author',
-            'password' => self::AUTHOR_PASSWORD, 'email_verified_at' => now()]);
+        $author = User::query()->updateOrCreate(['email' => self::AUTHOR_EMAIL], ['name' => 'E2E Author',
+            'password' => self::AUTHOR_PASSWORD, 'email_verified_at' => now(),
+            'account_status' => AccountStatus::Active]);
         if (! $author->hasRole('user')) {
             $author->assignRole('user');
         }

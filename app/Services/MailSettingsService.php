@@ -71,9 +71,17 @@ class MailSettingsService implements MailSettingsServiceContract
             return $this->cachedSettings;
         }
 
-        /** @var array<string, mixed> $payload */
-        $payload = Cache::remember(ApplicationCacheKeys::MAIL_SETTINGS, self::CACHE_TTL_SECONDS,
-            fn (): array => $this->mailSettingsPayloadFromDatabase());
+        try {
+            /** @var array<string, mixed> $payload */
+            $payload = Cache::remember(ApplicationCacheKeys::MAIL_SETTINGS, self::CACHE_TTL_SECONDS,
+                fn (): array => $this->mailSettingsPayloadFromDatabase());
+        } catch (\Throwable) {
+            try {
+                $payload = $this->mailSettingsPayloadFromDatabase();
+            } catch (\Throwable) {
+                $payload = $this->defaultSettingsPayload();
+            }
+        }
 
         return $this->cachedSettings = $this->mailSettingsFromPayload($payload);
     }
@@ -146,6 +154,30 @@ class MailSettingsService implements MailSettingsServiceContract
         Cache::forget(ApplicationCacheKeys::MAIL_SETTINGS);
         $this->cachedSettings = null;
         $this->configurationApplied = false;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function defaultSettingsPayload(): array
+    {
+        /** @var array<string, mixed> $defaults */
+        $defaults = TypeCast::array(config('mail-module.defaults'));
+
+        return [
+            'mode' => TypeCast::string($defaults['mode'] ?? 'preset', 'preset'),
+            'preset' => TypeCast::nullableString($defaults['preset'] ?? 'mailpit'),
+            'host' => TypeCast::nullableString($defaults['host'] ?? null),
+            'port' => TypeCast::nullableInt($defaults['port'] ?? null),
+            'scheme' => TypeCast::nullableString($defaults['scheme'] ?? null),
+            'username' => TypeCast::nullableString($defaults['username'] ?? null),
+            'password' => TypeCast::nullableString($defaults['password'] ?? null),
+            'fromAddress' => TypeCast::string($defaults['from_address'] ?? 'noreply@example.com'),
+            'fromName' => TypeCast::string($defaults['from_name'] ?? 'Laravel'),
+            'requireEmailVerification' => TypeCast::bool(
+                config('mail-module.require_email_verification_default', false),
+            ),
+        ];
     }
 
     /**

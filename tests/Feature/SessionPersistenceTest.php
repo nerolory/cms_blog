@@ -26,7 +26,7 @@ class SessionPersistenceTest extends TestCase
     }
 
     /**
-     * После входа staff и перехода с /admin на публичку сессия сохраняется.
+     * После входа staff и перехода с /admin на сайт сессия сохраняется.
      */
     public function test_staff_session_persists_from_admin_to_public_site(): void
     {
@@ -44,7 +44,7 @@ class SessionPersistenceTest extends TestCase
     }
 
     /**
-     * Авторизованный пользователь видит шапку на второй странице листинга.
+     * Auth-пользователь видит шапку на 2-й странице листинга.
      */
     public function test_authenticated_user_sees_navbar_on_listing_page_two(): void
     {
@@ -61,7 +61,7 @@ class SessionPersistenceTest extends TestCase
     }
 
     /**
-     * После гостевого просмотра листинга вход не ломает вторую страницу.
+     * После гостевого листинга вход не ломает вторую страницу.
      */
     public function test_login_after_guest_listing_page_two_shows_authenticated_navbar(): void
     {
@@ -84,7 +84,7 @@ class SessionPersistenceTest extends TestCase
     }
 
     /**
-     * Листинг: ETag и private-кэш различаются для гостя и авторизованного.
+     * Листинг: ETag и private-кэш различаются для гостя и auth.
      */
     public function test_posts_index_separates_guest_and_authenticated_cache_slots(): void
     {

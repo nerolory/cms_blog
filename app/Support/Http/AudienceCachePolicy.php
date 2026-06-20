@@ -2,14 +2,16 @@
 
 namespace App\Support\Http;
 
+use App\Support\TypeCast;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Политика HTTP-кэша для публичного сайта с персонализированной шапкой.
+ * Политика HTTP-кэша публичного сайта с персональной шапкой.
  *
  * Разделение аудиторий — через Vary: Cookie (сессия Laravel в Cookie).
- * Гость и каждый авторизованный пользователь получают свой слот в кэше браузера.
+ * Гость и каждый авторизованный пользователь получают свой слот
+ * в кэше браузера.
  */
 final class AudienceCachePolicy
 {
@@ -17,6 +19,8 @@ final class AudienceCachePolicy
 
     /**
      * Применять ли политику к ответу.
+     *
+     * @return bool
      */
     public static function applies(Request $request, Response $response): bool
     {
@@ -49,10 +53,12 @@ final class AudienceCachePolicy
 
     /**
      * Cache-Control по умолчанию для HTML с персонализацией.
+     *
+     * @return string
      */
     public static function defaultCacheControl(): string
     {
-        $maxAge = (int) config('seo.cache.max_age', 3600);
+        $maxAge = TypeCast::int(config('seo.cache.max_age'), 3600);
 
         return sprintf('private, max-age=%d, must-revalidate', $maxAge);
     }

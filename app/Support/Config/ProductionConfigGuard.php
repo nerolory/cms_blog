@@ -21,6 +21,10 @@ final class ProductionConfigGuard
             return;
         }
 
+        if (self::isIncompleteBootstrap()) {
+            return;
+        }
+
         self::assertHealthAllowlistConfigured();
         self::assertPaymentWebhookConfigured();
     }
@@ -56,6 +60,14 @@ final class ProductionConfigGuard
         if ($secret === '') {
             throw new RuntimeException('PAYMENT_WEBHOOK_SECRET must be configured when PAYMENT_GATEWAY=http.');
         }
+    }
+
+    /**
+     * Пропуск guard до key:generate и первичной настройки (.env, composer install, CI).
+     */
+    private static function isIncompleteBootstrap(): bool
+    {
+        return TypeCast::trimRequired(TypeCast::string(config('app.key'))) === '';
     }
 
     /**

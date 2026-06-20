@@ -5,6 +5,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+echo "==> Frontend (host)"
+npm run check:frontend
+npm run build
+
 echo "==> PHP (Docker)"
 docker compose exec -T php composer check:php
 
@@ -15,9 +19,5 @@ echo "==> Python (ai-service)"
   ruff check .
   pytest
 )
-
-echo "==> Frontend (host)"
-npm run check:frontend
-npm run build
 
 echo "==> CI passed"
