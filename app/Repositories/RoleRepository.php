@@ -28,6 +28,9 @@ class RoleRepository implements RoleRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return Role
      */
     public function findOrCreate(string $name, string $guard = 'web'): Role
     {
@@ -41,6 +44,9 @@ class RoleRepository implements RoleRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return Role
      */
     public function syncPermissions(Role $role, Collection $permissionNames): Role
     {

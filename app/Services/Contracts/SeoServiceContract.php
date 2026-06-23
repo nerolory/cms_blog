@@ -3,11 +3,13 @@
 namespace App\Services\Contracts;
 
 use App\DTO\HttpCacheContext;
+use App\DTO\PostListEngagementItem;
 use App\DTO\SeoData;
 use App\DTO\SeoMetaData;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 /**
  * Контракт сервиса seo.
@@ -73,16 +75,29 @@ interface SeoServiceContract
      *
      * @param  Post  $post  пост
      * @param  int  $viewsCount  count
+     * @param  string  $engagementVersion  версия engagement для ETag гостя
+     * @param  int  $totalVisibleComments  число видимых комментариев для ETag гостя
 
      * @return HttpCacheContext
      */
-    public function httpCacheContextForPost(Post $post, ?User $viewer, int $viewsCount = 0): HttpCacheContext;
+    public function httpCacheContextForPost(
+        Post $post,
+        ?User $viewer,
+        int $viewsCount = 0,
+        string $engagementVersion = '0',
+        int $totalVisibleComments = 0,
+    ): HttpCacheContext;
 
     /**
      * Формирует HTTP-кеш контекст для листинга постов.
      *
      * @param  LengthAwarePaginator<int, Post>  $posts
+     * @param  Collection<int, PostListEngagementItem>|null  $listingEngagement
      * @return HttpCacheContext
      */
-    public function httpCacheContextForListing(LengthAwarePaginator $posts, ?User $viewer): HttpCacheContext;
+    public function httpCacheContextForListing(
+        LengthAwarePaginator $posts,
+        ?User $viewer,
+        ?Collection $listingEngagement = null,
+    ): HttpCacheContext;
 }

@@ -1,11 +1,13 @@
 @php
     use App\Support\Cache\CacheVersionManager;
     use App\Support\Theme;
+    use App\Services\Contracts\SiteSettingsServiceContract;
 
     $theme = Theme::current();
     $bsTheme = $theme->bootstrapTheme();
     $bodyClass = trim('min-vh-100 d-flex flex-column ' . $theme->bodyClass());
     $cacheVersion = app(CacheVersionManager::class)->current();
+    $siteName = app(SiteSettingsServiceContract::class)->siteName();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
@@ -17,7 +19,7 @@
     <meta name="theme-color" content="#0d6efd">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="app-cache-version" content="{{ $cacheVersion }}">
-    <title>@yield('title', config('app.name')) — {{ config('app.name') }}</title>
+    <title>@yield('title', $siteName) — {{ $siteName }}</title>
     @stack('meta')
     @stack('head-jsonld')
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))

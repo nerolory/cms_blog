@@ -4,8 +4,8 @@
 
 Публичные маршруты `posts.index`, `posts.show` и API `GET /api/v1/posts*` используют middleware `conditional.get`:
 
-- `Cache-Control: public, max-age=…, must-revalidate` (см. `config/seo.php`, `SEO_CACHE_MAX_AGE`)
-- `Vary: Cookie` — разные ответы для guest/auth и visibility (C-1)
+- `Cache-Control: private, max-age=…, must-revalidate` (см. `config/seo.php`, `SEO_CACHE_MAX_AGE`)
+- `Vary: Cookie` — отдельный кэш для гостя и каждой сессии (middleware `ApplyAudienceCacheHeaders` на всём публичном HTML)
 - `ETag` и `Last-Modified` — поддержка `304 Not Modified`
 - `X-Robots-Tag` — из `SeoService` (согласовано с HTML `<meta name="robots">`, C-3)
 

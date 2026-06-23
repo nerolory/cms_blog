@@ -212,6 +212,7 @@ class MailSettingsPage extends Page
                         ->label(__('admin.mail.fields.password'))
                         ->password()
                         ->revealable()
+                        ->autocomplete('current-password')
                         ->visible(fn (callable $get): bool => in_array($get('mode'), ['smtp', 'preset'], true)),
                 ]),
         ]);

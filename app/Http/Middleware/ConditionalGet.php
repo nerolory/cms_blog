@@ -3,13 +3,15 @@
 namespace App\Http\Middleware;
 
 use App\DTO\HttpCacheContext;
+use App\Support\Http\AudienceCachePolicy;
 use App\Support\Http\HttpCacheRequestAttributes;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Applies conditional GET headers (ETag, Last-Modified, Cache-Control) and short-circuits 304 responses.
+ * Conditional GET (ETag, Last-Modified) для маршрутов с HttpCacheContext.
+ * ETag включает id зрителя — кэш гостя и пользователя разделён.
  */
 class ConditionalGet
 {
@@ -40,7 +42,7 @@ class ConditionalGet
     private function applyCacheHeaders(Response $response, HttpCacheContext $context): void
     {
         $response->headers->set('Cache-Control', $context->cacheControl);
-        $response->headers->set('Vary', 'Cookie');
+        AudienceCachePolicy::applyVary($response);
         $response->headers->set('Last-Modified', gmdate('D, d M Y H:i:s',
             $context->lastModified->getTimestamp()).' GMT');
         $response->headers->set('ETag', $context->etag);

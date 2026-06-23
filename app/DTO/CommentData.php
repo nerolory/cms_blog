@@ -10,18 +10,18 @@ namespace App\DTO;
  * @property-read int $userId
  * @property-read string $body
  * @property-read ?int $parentId
+ * @property-read ?int $threadRootId
+ * @property-read ?int $replyToId
  */
 readonly class CommentData
 {
     public function __construct(public int $postId, public int $userId, public string $body,
-        public ?int $parentId = null) {}
+        public ?int $parentId = null, public ?int $threadRootId = null, public ?int $replyToId = null) {}
 
     /**
      * from validated.
      *
-     * @param  int  $postId  id
-     * @param  int  $userId  id
-     * @param  ?int  $parentId  id
+     * @param  ?int  $parentId  id комментария, на который отвечают
 
      * @return self
      */

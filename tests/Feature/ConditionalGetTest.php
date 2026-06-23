@@ -41,7 +41,7 @@ class ConditionalGetTest extends TestCase
         $this->assertNotNull($response->headers->get('Last-Modified'));
         $cacheControl = $response->headers->get('Cache-Control');
         $this->assertIsString($cacheControl);
-        $this->assertStringContainsString('public', $cacheControl);
+        $this->assertStringContainsString('private', $cacheControl);
         $this->assertStringContainsString('max-age=', $cacheControl);
         $response->assertHeader('X-Robots-Tag', 'index,follow');
     }
@@ -58,6 +58,22 @@ class ConditionalGetTest extends TestCase
         $lastModified = $first->headers->get('Last-Modified');
         $this->assertIsString($lastModified);
         $second = $this->get(route('posts.show', $post), ['If-Modified-Since' => $lastModified]);
+        $second->assertStatus(304);
+    }
+
+    /**
+     * Auth-пользователь: 304 при совпадении ETag на листинге.
+     */
+    public function test_authenticated_posts_index_returns_304_when_etag_matches(): void
+    {
+        $user = User::factory()->create();
+        Post::factory()->count(2)->for($user)->published()->create(['visibility' => PostVisibility::Guest->value]);
+        $first = $this->actingAs($user)->get(route('posts.index'));
+        $first->assertOk();
+        $etag = $first->headers->get('ETag');
+        $this->assertIsString($etag);
+
+        $second = $this->actingAs($user)->get(route('posts.index'), ['If-None-Match' => $etag]);
         $second->assertStatus(304);
     }
 

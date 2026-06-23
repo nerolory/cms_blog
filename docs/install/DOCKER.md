@@ -214,6 +214,8 @@ docker compose up -d --build
 | Port already in use | Change `HOST_HTTP_PORT` / `HOST_POSTGRES_PORT` in `.env` |
 | `SQLSTATE connection refused` | `DB_HOST=database`, wait for `database` healthy |
 | Slow Blade on Windows | Named volumes for `storage/framework/views` already configured |
+| PHP/Blade changes not visible in browser | `docker compose exec php php artisan optimize:clear` then **`docker compose restart php`** (OPcache `validate_timestamps=0` on bind mounts) |
+| `502 Bad Gateway` on all pages | PHP-FPM not running or nginx stale upstream — `docker compose ps php`; `docker compose logs php --tail 30`; `docker compose up -d` |
 | npm in container fails on Windows | Run `npm` on host — see Makefile `ci-frontend` |
 | AI service unhealthy | Set `AI_SERVICE_DATABASE_URL`; check Postgres credentials |
 | Permission denied `storage/` | `docker compose exec php chown -R www-data:www-data storage bootstrap/cache` |

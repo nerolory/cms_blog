@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Middleware\ApplyAudienceCacheHeaders;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\ConditionalGet;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureSiteOperational;
+use App\Http\Middleware\PrepareEngagementSpaRequest;
 use App\Http\Middleware\PreventPreviewCaching;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SyncBrowserCacheVersion;
 use App\Jobs\PersistPostViewCountsJob;
+use App\Services\Contracts\SiteOperationalServiceContract;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,16 +29,24 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('posts:cleanup-previews')->hourly();
         $schedule->command('posts:publish-scheduled')->everyMinute();
-        $schedule->job(new PersistPostViewCountsJob)->everyFiveMinutes();
+        $schedule->job(new PersistPostViewCountsJob)->everyMinute();
+        $schedule->call(static function (): void {
+            app(SiteOperationalServiceContract::class)->assess();
+        })->everyThirtySeconds();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
         $middleware->append(AssignRequestId::class);
 
+        $middleware->web(prepend: [
+            PrepareEngagementSpaRequest::class,
+        ]);
+
         $middleware->web(append: [
             SetLocale::class,
             SyncBrowserCacheVersion::class,
             EnsureSiteOperational::class,
+            ApplyAudienceCacheHeaders::class,
         ]);
 
         $middleware->throttleApi('api');
@@ -48,7 +59,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*')
+                || $request->header('X-Engagement-Spa') === '1',
         );
 
         $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {

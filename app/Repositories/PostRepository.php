@@ -204,6 +204,9 @@ class PostRepository implements PostRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return Post
      */
     public function refreshWithRelations(Post $post): Post
     {

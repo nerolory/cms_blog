@@ -30,6 +30,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Учитывает Vite (self), TinyMCE и CropperJS (self + cdn.jsdelivr.net).
+    | Filament: nonce на inline script/style в vendor-override, unsafe-eval для Alpine.
     | Отключить: SECURITY_CSP_ENABLED=false
     |
     */

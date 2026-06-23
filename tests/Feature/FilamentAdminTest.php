@@ -69,6 +69,24 @@ class FilamentAdminTest extends TestCase
     }
 
     /**
+     * В админке есть ссылка «На сайт» рядом с логотипом (сайдбар
+     * и топбар).
+     */
+    public function test_admin_topbar_shows_public_site_link(): void
+    {
+        $this->seedRoles();
+        $moderator = User::factory()->create();
+        $moderator->assignRole('moderator');
+
+        $this->actingAs($moderator)
+            ->get('/admin')
+            ->assertOk()
+            ->assertSee(__('layout.nav.public_site'), false)
+            ->assertSee(route('home'), false)
+            ->assertSee('fi-public-site-link', false);
+    }
+
+    /**
      * test admin can access shield roles.
      */
     public function test_admin_can_access_shield_roles(): void

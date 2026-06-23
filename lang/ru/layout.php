@@ -9,6 +9,9 @@ return [
         'profile' => 'Профиль',
         'logout' => 'Выход',
         'tokens' => 'Токены',
+        'tokens_balance' => 'Токены: :balance',
+        'admin' => 'Админка',
+        'public_site' => 'На сайт',
     ],
 
     'locale' => [

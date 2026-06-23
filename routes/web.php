@@ -18,12 +18,14 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentReactionController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostImageUploadController;
 use App\Http\Controllers\PostPreviewController;
+use App\Http\Controllers\PostShowEngagementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\SearchController;
@@ -127,6 +129,19 @@ Route::get('posts/preview/{token}', [PostPreviewController::class, 'show'])
 // --- Секция 8: Посты — member + nested (auth + account.active) ---
 // {postSlug} — slug поста (вариант A, без model binding).
 
+Route::get('posts/{postSlug}/comments', [CommentController::class, 'index'])
+    ->middleware('throttle:60,1')
+    ->name('posts.comments.index');
+Route::get('posts/{postSlug}/comments/threads/{threadId}', [CommentController::class, 'threadReplies'])
+    ->middleware('throttle:60,1')
+    ->name('posts.comments.thread');
+Route::get('posts/{postSlug}/engagement', [PostShowEngagementController::class, 'show'])
+    ->middleware('throttle:60,1')
+    ->name('posts.engagement.show');
+Route::get('posts/{postSlug}/engagement/stream', [PostShowEngagementController::class, 'stream'])
+    ->middleware('throttle:30,1')
+    ->name('posts.engagement.stream');
+
 Route::middleware(['auth', 'account.active'])->group(function (): void {
     // Nested: engagement
     Route::post('posts/{postSlug}/comments', [CommentController::class, 'store'])
@@ -138,6 +153,9 @@ Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::delete('posts/{postSlug}/comments/{commentId}', [CommentController::class, 'destroy'])
         ->middleware('throttle:20,1')
         ->name('posts.comments.destroy');
+    Route::post('posts/{postSlug}/comments/{commentId}/reactions', [CommentReactionController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('posts.comments.reactions.store');
     Route::post('posts/{postSlug}/reactions', [ReactionController::class, 'store'])
         ->middleware('throttle:30,1')
         ->name('posts.reactions.store');

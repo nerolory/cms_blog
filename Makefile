@@ -1,6 +1,6 @@
-.PHONY: ci ci-php ci-python ci-frontend ci-audit install install-tools
+.PHONY: ci ci-php ci-python ci-frontend ci-audit install install-tools verify-ui
 
-ci: ci-php ci-python ci-frontend ci-audit
+ci: ci-frontend ci-php ci-python ci-audit
 
 ci-php:
 	docker compose exec -T php composer check:php
@@ -16,6 +16,13 @@ ci-audit:
 ci-frontend:
 	npm run check:frontend
 	npm run build
+
+# После правок CSS/Blade: сборка на хосте + smoke-проверка в контейнере.
+verify-ui:
+	npm run build
+	docker compose exec -T php php scripts/verify-ui-changes.php
+	docker compose exec -T php php scripts/verify-engagement-markup.php
+	docker compose exec -T php php artisan test --filter="FilamentAdminTest::test_admin_topbar|PostControllerTest::test_show_warm"
 
 install-tools:
 	docker compose exec -T php composer install

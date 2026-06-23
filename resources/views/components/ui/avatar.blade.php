@@ -23,7 +23,7 @@
         'rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center avatar-fallback',
         $sizeClass,
         'd-none' => $url !== null,
-    ]) style="width: {{ $pixel }}px; height: {{ $pixel }}px;">
+    ])>
         {{ $initial }}
     </span>
 </span>

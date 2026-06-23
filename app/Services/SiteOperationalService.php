@@ -86,7 +86,23 @@ class SiteOperationalService implements SiteOperationalServiceContract
      */
     public function isCriticalOperational(): bool
     {
-        return $this->assess()->criticalOk;
+        $cached = $this->getCachedCriticalOk();
+
+        return $cached ?? $this->assess()->criticalOk;
+    }
+
+    /**
+     * Возвращает закэшированный флаг criticalOk без запуска probe.
+
+     *
+     * @return ?bool
+     */
+    public function getCachedCriticalOk(): ?bool
+    {
+        /** @var array{criticalOk: bool}|null $payload */
+        $payload = Cache::get(self::ASSESS_CACHE_KEY);
+
+        return $payload === null ? null : (bool) $payload['criticalOk'];
     }
 
     /**

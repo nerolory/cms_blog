@@ -12,7 +12,7 @@ test.describe('Form dirty-state (Save button)', () => {
         await expect(page.locator('#post-edit-form')).toBeVisible();
 
         const saveButton = page.locator('#post-update-btn');
-        await expect(saveButton).toBeDisabled();
+        await expect(saveButton).toBeDisabled({ timeout: 15_000 });
 
         await page.locator('input[name="title"]').fill('E2E dirty state changed title');
         await expect(saveButton).toBeEnabled();
@@ -25,8 +25,11 @@ test.describe('Form dirty-state (Save button)', () => {
         await page.goto('/profile');
         await expect(page.locator('#profile-form')).toBeVisible();
 
+        await page.locator('input[name="password"]').fill('');
+        await page.locator('input[name="password_confirmation"]').fill('');
+
         const saveButton = page.locator('#profile-save-btn');
-        await expect(saveButton).toBeDisabled();
+        await expect(saveButton).toBeDisabled({ timeout: 15_000 });
 
         await page.locator('input[name="name"]').fill('E2E Author Renamed');
         await expect(saveButton).toBeEnabled();

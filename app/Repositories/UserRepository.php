@@ -246,6 +246,9 @@ class UserRepository implements UserRepositoryContract
 
     /**
      * {@inheritdoc}
+
+     *
+     * @return User
      */
     public function assignRole(User $user, string $roleName): User
     {

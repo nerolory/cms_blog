@@ -10,9 +10,11 @@ use App\Models\User;
 use App\Services\Contracts\PostServiceContract;
 use App\Services\Contracts\PostShowPageServiceContract;
 use App\Services\Contracts\PostVersionServiceContract;
+use App\Services\Contracts\PostViewServiceContract;
 use App\Services\Contracts\SeoServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Support\Http\HttpCacheRequestAttributes;
+use App\Support\TypeCast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,12 +28,14 @@ use Illuminate\Http\Request;
  * @property-read SeoServiceContract $seoService
  * @property-read PostShowPageServiceContract $postShowPageService
  * @property-read PostVersionServiceContract $versionService
+
+ * @property-read PostViewServiceContract $postViewService
  */
 class PostController extends Controller
 {
     public function __construct(protected PostServiceContract $postService, protected UserServiceContract $userService,
         protected SeoServiceContract $seoService, protected PostShowPageServiceContract $postShowPageService,
-        protected PostVersionServiceContract $versionService) {}
+        protected PostVersionServiceContract $versionService, protected PostViewServiceContract $postViewService) {}
 
     /**
      * Displays the public post listing.
@@ -44,10 +48,13 @@ class PostController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $posts = $this->postService->getPublicListing($user);
+        $listingEngagement = $this->postViewService->getListingEngagementForPostIds(
+            $posts->getCollection()->pluck('id')->map(fn (mixed $id): int => TypeCast::int($id))->values(),
+        );
         $request->attributes->set(HttpCacheRequestAttributes::CACHE_CONTEXT,
-            $this->seoService->httpCacheContextForListing($posts, $user));
+            $this->seoService->httpCacheContextForListing($posts, $user, $listingEngagement));
 
-        return view('pages.posts.index', compact('posts'));
+        return view('pages.posts.index', compact('posts', 'listingEngagement'));
     }
 
     /**

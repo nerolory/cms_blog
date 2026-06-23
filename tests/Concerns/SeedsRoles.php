@@ -35,7 +35,6 @@ trait SeedsRoles
         $this->seedRoles();
         /** @var User $user */
         $user = User::factory()->create($attributes);
-        $user->assignRole('user');
         $freshUser = $user->fresh();
         if (! $freshUser instanceof User) {
             throw new \RuntimeException('Failed to refresh author user.');
@@ -55,7 +54,7 @@ trait SeedsRoles
         $this->seedRoles();
         /** @var User $user */
         $user = User::factory()->create($attributes);
-        $user->assignRole('moderator');
+        $user->syncRoles(['moderator']);
         $freshUser = $user->fresh();
         if (! $freshUser instanceof User) {
             throw new \RuntimeException('Failed to refresh moderator user.');
@@ -75,7 +74,7 @@ trait SeedsRoles
         $this->seedRoles();
         /** @var User $user */
         $user = User::factory()->create($attributes);
-        $user->assignRole('owner');
+        $user->syncRoles(['owner']);
         $freshUser = $user->fresh();
         if (! $freshUser instanceof User) {
             throw new \RuntimeException('Failed to refresh owner user.');

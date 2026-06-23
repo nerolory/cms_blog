@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Rbac;
 
+use App\Support\Rbac\RoleProvisioner;
 use Database\Seeders\Rbac\Concerns\ProvisionsRole;
 use Illuminate\Database\Seeder;
 
@@ -17,7 +18,6 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->syncRole('user', ['posts.create', 'posts.update.own', 'posts.delete.own', 'ai.orders.request',
-            'tokens.purchase']);
+        $this->syncRole('user', array_values(app(RoleProvisioner::class)->defaultUserPermissions()->all()));
     }
 }

@@ -1,6 +1,6 @@
-<nav class="navbar navbar-expand-lg border-bottom bg-body mb-3">
+<nav class="navbar navbar-expand-lg border-bottom bg-body mb-3 layout-navbar">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">{{ config('app.name') }}</a>
+        <a class="navbar-brand" href="{{ route('home') }}">{{ $siteName }}</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
             aria-controls="mainNav" aria-expanded="false" aria-label="Menu">
@@ -26,8 +26,17 @@
                 </li>
                 @auth
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('tokens.show') }}">{{ __('layout.nav.tokens') }}</a>
+                        <a href="{{ route('tokens.show') }}" class="btn btn-secondary btn-sm layout-navbar__balance"
+                            aria-label="{{ __('layout.nav.tokens_balance', ['balance' => $tokenBalanceAria]) }}">
+                            {{ __('layout.nav.tokens_balance', ['balance' => $tokenBalance]) }}
+                        </a>
                     </li>
+                    @if ($canAccessAdmin)
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary btn-sm layout-navbar__admin"
+                                href="{{ url('/admin') }}">{{ __('layout.nav.admin') }}</a>
+                        </li>
+                    @endif
                     <li class="nav-item d-flex align-items-center gap-2">
                         <x-ui.avatar :user="auth()->user()" size="sm" />
                         <a class="nav-link" href="{{ route('profile.edit') }}">{{ __('layout.nav.profile') }}</a>

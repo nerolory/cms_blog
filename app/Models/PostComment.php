@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $post_id
  * @property int $user_id
  * @property int|null $parent_id
+ * @property int|null $reply_to_id
  * @property string $body
  * @property CommentStatus $status
  * @property Carbon|null $created_at
@@ -27,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property-read Post $post
  * @property-read User $user
  * @property-read PostComment|null $parent
+ * @property-read PostComment|null $replyTo
  * @property-read Collection<int, PostComment> $replies
  */
 #[UsePolicy(CommentPolicy::class)]
@@ -34,7 +36,7 @@ class PostComment extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['post_id', 'user_id', 'parent_id', 'body', 'status'];
+    protected $fillable = ['post_id', 'user_id', 'parent_id', 'reply_to_id', 'body', 'status'];
 
     protected $casts = ['status' => CommentStatus::class];
 
@@ -69,6 +71,16 @@ class PostComment extends Model
     }
 
     /**
+     * Комментарий, на который дан ответ.
+     *
+     * @return BelongsTo<PostComment, $this>
+     */
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'reply_to_id');
+    }
+
+    /**
      * Ответы на комментарий.
      *
      * @return HasMany<PostComment, $this>
@@ -87,5 +99,30 @@ class PostComment extends Model
     public function isRoot(): bool
     {
         return $this->parent_id === null;
+    }
+
+    /**
+     * Прямой ответ на корневой комментарий (с отступом).
+
+     *
+     * @return bool
+     */
+    public function isDirectReplyToRoot(): bool
+    {
+        return $this->parent_id !== null
+            && ($this->reply_to_id === null || $this->reply_to_id === $this->parent_id);
+    }
+
+    /**
+     * Показывать ссылку на комментарий, на который отвечали.
+
+     *
+     * @return bool
+     */
+    public function shouldShowReplyReference(): bool
+    {
+        return $this->reply_to_id !== null
+            && $this->parent_id !== null
+            && $this->reply_to_id !== $this->parent_id;
     }
 }

@@ -49,7 +49,7 @@ class ProductionConfigGuardTest extends TestCase
     public function test_health_allowlist_guard_requires_ips_in_production(): void
     {
         $this->app->detectEnvironment(static fn (): string => 'production');
-        config(['health.allowed_ips' => []]);
+        config(['health.allowed_ips' => [], 'app.key' => 'base64:'.base64_encode('test-key-32-bytes-long!!')]);
         $this->expectException(RuntimeException::class);
         ProductionConfigGuard::assertBootRequirements();
     }
@@ -60,7 +60,21 @@ class ProductionConfigGuardTest extends TestCase
     public function test_health_allowlist_guard_passes_when_configured_in_production(): void
     {
         $this->app->detectEnvironment(static fn (): string => 'production');
-        config(['health.allowed_ips' => ['127.0.0.1']]);
+        config([
+            'health.allowed_ips' => ['127.0.0.1'],
+            'app.key' => 'base64:'.base64_encode('test-key-32-bytes-long!!'),
+        ]);
+        ProductionConfigGuard::assertBootRequirements();
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * test health allowlist guard skips before app key is generated.
+     */
+    public function test_health_allowlist_guard_skips_incomplete_bootstrap_in_production(): void
+    {
+        $this->app->detectEnvironment(static fn (): string => 'production');
+        config(['health.allowed_ips' => [], 'app.key' => '']);
         ProductionConfigGuard::assertBootRequirements();
         $this->addToAssertionCount(1);
     }

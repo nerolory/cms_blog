@@ -2,9 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Avatar\LocalAvatarProvider;
 use App\Filament\Widgets\ModerationSlaWidget;
+use App\Http\Middleware\SetLocale;
 use App\Services\Contracts\MailSettingsServiceContract;
+use App\Services\Contracts\SiteSettingsServiceContract;
+use App\Support\Database\SchemaInspector;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -13,13 +18,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
@@ -39,6 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandName(fn (): string => $this->app->make(SiteSettingsServiceContract::class)->siteName())
+            ->defaultAvatarProvider(LocalAvatarProvider::class)
             ->login()
             ->colors(['primary' => Color::Amber])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -50,6 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                SetLocale::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,
@@ -62,7 +71,22 @@ class AdminPanelProvider extends PanelProvider
                     ->navigationGroup(__('admin.navigation.access'))
                     ->navigationLabel(__('admin.roles.navigation')),
             ])
-            ->authMiddleware([Authenticate::class]);
+            ->authMiddleware([Authenticate::class])
+            ->userMenuItems([
+                Action::make('public_site')
+                    ->label(__('layout.nav.public_site'))
+                    ->url(fn (): string => route('home'))
+                    ->icon('heroicon-o-globe-alt')
+                    ->sort(-10),
+            ])
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_LOGO_AFTER,
+                fn (): View => view('filament.hooks.public-site-link'),
+            )
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_LOGO_AFTER,
+                fn (): View => view('filament.hooks.public-site-link'),
+            );
         if ($this->shouldEnableFilamentEmailVerification()) {
             $panel->emailVerification();
         }
@@ -72,13 +96,19 @@ class AdminPanelProvider extends PanelProvider
 
     private function shouldEnableFilamentEmailVerification(): bool
     {
-        if (! Schema::hasTable('settings')) {
-            return (bool) config('mail-module.require_email_verification_default');
+        $fallback = (bool) config('mail-module.require_email_verification_default');
+
+        try {
+            if (! SchemaInspector::hasSettingsTable()) {
+                return $fallback;
+            }
+
+            /** @var MailSettingsServiceContract $mailSettingsService */
+            $mailSettingsService = $this->app->make(MailSettingsServiceContract::class);
+
+            return $mailSettingsService->isEmailVerificationRequired();
+        } catch (\Throwable) {
+            return $fallback;
         }
-
-        /** @var MailSettingsServiceContract $mailSettingsService */
-        $mailSettingsService = $this->app->make(MailSettingsServiceContract::class);
-
-        return $mailSettingsService->isEmailVerificationRequired();
     }
 }

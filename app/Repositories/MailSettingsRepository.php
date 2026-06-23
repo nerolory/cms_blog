@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\DTO\MailSettingsData;
 use App\Models\Setting;
 use App\Repositories\Contracts\MailSettingsRepositoryContract;
+use App\Services\Contracts\MailSettingsServiceContract;
+use App\Support\Database\SchemaInspector;
 use App\Support\Mail\MailSettingKey;
 use App\Support\TypeCast;
 use Illuminate\Support\Facades\Crypt;
@@ -28,15 +30,7 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
      */
     public function get(string $key): ?string
     {
-        $record = $this->setting->newQuery()->find($key);
-        if ($record === null || $record->value === null) {
-            return null;
-        }
-        if ($this->isEncryptedKey($key)) {
-            return Crypt::decryptString($record->value);
-        }
-
-        return $record->value;
+        return $this->getMany([$key])[$key] ?? null;
     }
 
     /**
@@ -48,11 +42,13 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
     {
         if ($value === null) {
             $this->setting->newQuery()->where('key', $key)->delete();
+            $this->forgetMailSettingsServiceCache();
 
             return;
         }
         $storedValue = $this->isEncryptedKey($key) ? Crypt::encryptString($value) : $value;
         $this->setting->newQuery()->updateOrCreate(['key' => $key], ['value' => $storedValue]);
+        $this->forgetMailSettingsServiceCache();
     }
 
     /**
@@ -63,23 +59,39 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
      */
     public function getMailSettings(): MailSettingsData
     {
+        if (! SchemaInspector::hasSettingsTable()) {
+            return $this->defaultMailSettings();
+        }
+
         /** @var array<string, mixed> $defaults */
         $defaults = TypeCast::array(config('mail-module.defaults'));
+        $values = $this->getMany([
+            MailSettingKey::MODE,
+            MailSettingKey::PRESET,
+            MailSettingKey::HOST,
+            MailSettingKey::PORT,
+            MailSettingKey::SCHEME,
+            MailSettingKey::USERNAME,
+            MailSettingKey::PASSWORD,
+            MailSettingKey::FROM_ADDRESS,
+            MailSettingKey::FROM_NAME,
+            MailSettingKey::REQUIRE_EMAIL_VERIFICATION,
+        ]);
 
         return new MailSettingsData(
-            mode: $this->get(MailSettingKey::MODE) ?? TypeCast::string($defaults['mode'] ?? 'preset', 'preset'),
-            preset: $this->get(MailSettingKey::PRESET) ?? TypeCast::string($defaults['preset'] ?? 'mailpit', 'mailpit'),
-            host: $this->get(MailSettingKey::HOST) ?? TypeCast::nullableString($defaults['host'] ?? null),
-            port: $this->readPort($defaults),
-            scheme: $this->get(MailSettingKey::SCHEME) ?? TypeCast::nullableString($defaults['scheme'] ?? null),
-            username: $this->get(MailSettingKey::USERNAME) ?? TypeCast::nullableString($defaults['username'] ?? null),
-            password: $this->get(MailSettingKey::PASSWORD) ?? TypeCast::nullableString($defaults['password'] ?? null),
-            fromAddress: $this->get(MailSettingKey::FROM_ADDRESS)
+            mode: $values[MailSettingKey::MODE] ?? TypeCast::string($defaults['mode'] ?? 'preset', 'preset'),
+            preset: $values[MailSettingKey::PRESET] ?? TypeCast::string($defaults['preset'] ?? 'mailpit', 'mailpit'),
+            host: $values[MailSettingKey::HOST] ?? TypeCast::nullableString($defaults['host'] ?? null),
+            port: $this->readPortFromValues($values, $defaults),
+            scheme: $values[MailSettingKey::SCHEME] ?? TypeCast::nullableString($defaults['scheme'] ?? null),
+            username: $values[MailSettingKey::USERNAME] ?? TypeCast::nullableString($defaults['username'] ?? null),
+            password: $values[MailSettingKey::PASSWORD] ?? TypeCast::nullableString($defaults['password'] ?? null),
+            fromAddress: $values[MailSettingKey::FROM_ADDRESS]
                 ?? TypeCast::string($defaults['from_address'] ?? 'noreply@example.com'),
-            fromName: $this->get(MailSettingKey::FROM_NAME)
+            fromName: $values[MailSettingKey::FROM_NAME]
                 ?? TypeCast::string($defaults['from_name'] ?? 'Laravel'),
-            requireEmailVerification: $this->readBoolean(
-                MailSettingKey::REQUIRE_EMAIL_VERIFICATION,
+            requireEmailVerification: $this->readBooleanFromValue(
+                $values[MailSettingKey::REQUIRE_EMAIL_VERIFICATION] ?? null,
                 TypeCast::bool(config('mail-module.require_email_verification_default', false)),
             ),
         );
@@ -115,11 +127,37 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
     }
 
     /**
+     * @param  list<string>  $keys
+     * @return array<string, ?string>
+     */
+    private function getMany(array $keys): array
+    {
+        if ($keys === [] || ! SchemaInspector::hasSettingsTable()) {
+            return array_fill_keys($keys, null);
+        }
+
+        $records = $this->setting->newQuery()->whereIn('key', $keys)->get(['key', 'value']);
+        $values = array_fill_keys($keys, null);
+        foreach ($records as $record) {
+            $key = TypeCast::string($record->key);
+            if ($record->value === null) {
+                continue;
+            }
+            $values[$key] = $this->isEncryptedKey($key)
+                ? Crypt::decryptString($record->value)
+                : $record->value;
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param  array<string, ?string>  $values
      * @param  array<string, mixed>  $defaults
      */
-    private function readPort(array $defaults): ?int
+    private function readPortFromValues(array $values, array $defaults): ?int
     {
-        $stored = $this->get(MailSettingKey::PORT);
+        $stored = $values[MailSettingKey::PORT] ?? null;
         if ($stored !== null && $stored !== '') {
             return TypeCast::int($stored);
         }
@@ -128,13 +166,38 @@ class MailSettingsRepository implements MailSettingsRepositoryContract
         return $defaultPort !== null && $defaultPort !== '' ? TypeCast::nullableInt($defaultPort) : null;
     }
 
-    private function readBoolean(string $key, bool $default): bool
+    private function readBooleanFromValue(?string $value, bool $default): bool
     {
-        $value = $this->get($key);
         if ($value === null) {
             return $default;
         }
 
         return in_array($value, ['1', 'true', 'yes'], true);
+    }
+
+    private function defaultMailSettings(): MailSettingsData
+    {
+        /** @var array<string, mixed> $defaults */
+        $defaults = TypeCast::array(config('mail-module.defaults'));
+
+        return new MailSettingsData(
+            mode: TypeCast::string($defaults['mode'] ?? 'preset', 'preset'),
+            preset: TypeCast::string($defaults['preset'] ?? 'mailpit', 'mailpit'),
+            host: TypeCast::nullableString($defaults['host'] ?? null),
+            port: TypeCast::nullableInt($defaults['port'] ?? null),
+            scheme: TypeCast::nullableString($defaults['scheme'] ?? null),
+            username: TypeCast::nullableString($defaults['username'] ?? null),
+            password: TypeCast::nullableString($defaults['password'] ?? null),
+            fromAddress: TypeCast::string($defaults['from_address'] ?? 'noreply@example.com'),
+            fromName: TypeCast::string($defaults['from_name'] ?? 'Laravel'),
+            requireEmailVerification: TypeCast::bool(config('mail-module.require_email_verification_default', false)),
+        );
+    }
+
+    private function forgetMailSettingsServiceCache(): void
+    {
+        if (app()->bound(MailSettingsServiceContract::class)) {
+            app(MailSettingsServiceContract::class)->forgetSettingsCache();
+        }
     }
 }

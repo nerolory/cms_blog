@@ -22,6 +22,19 @@ interface SiteTemplateRepositoryContract
     public function findById(int $id): ?SiteTemplate;
 
     /**
+     * Возвращает активный шаблон с темами (межзапросный кэш).
+
+     *
+     * @return ?SiteTemplate
+     */
+    public function findActiveTemplate(): ?SiteTemplate;
+
+    /**
+     * Сбрасывает кэш активного шаблона.
+     */
+    public function forgetActiveTemplateCache(): void;
+
+    /**
      * Находит by slug.
 
      *

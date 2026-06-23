@@ -18,5 +18,5 @@ interface AiInsightServiceContract
 
      * @return PostAiInsights
      */
-    public function forPost(Post $post, ?User $viewer = null): PostAiInsights;
+    public function forPost(Post $post, ?User $viewer = null, ?int $visibleCommentCount = null): PostAiInsights;
 }

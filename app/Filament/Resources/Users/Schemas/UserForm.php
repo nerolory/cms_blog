@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\Role;
+use App\Support\TypeCast;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -30,6 +32,9 @@ class UserForm
             ->label(__('admin.users.fields.theme'))->default('default')->disabled()
             ->dehydrated(false), TextInput::make('avatar_path')->label(__('admin.users.fields.avatar'))->disabled()
             ->dehydrated(false), Select::make('roles')->label(__('admin.users.fields.roles'))
-            ->relationship('roles', 'name')->multiple()->preload()->columnSpanFull()]);
+            ->relationship('roles', 'name')->multiple()->preload()->required()->minItems(1)
+            ->default(fn (): array => Role::query()->where('name', 'user')->pluck('id')->map(
+                fn (mixed $id): int => TypeCast::int($id),
+            )->all())->columnSpanFull()]);
     }
 }

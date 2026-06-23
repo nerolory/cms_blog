@@ -21,17 +21,9 @@ interface ReactionServiceContract
     public function toggle(ReactionData $data): ?PostReaction;
 
     /**
-     * counts for post.
-     *
-     * @param  int  $postId  id
-     */
-    /**
-     * counts for post.
-     */
-    /**
      * Возвращает счётчики реакций для поста.
      *
-     * @return Collection<int, int>
+     * @return Collection<string, int>
      */
     public function countsForPost(int $postId): Collection;
 

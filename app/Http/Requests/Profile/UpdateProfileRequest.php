@@ -13,6 +13,9 @@ use Illuminate\Validation\Rules\Password;
 
 /**
  * Валидация запроса update profile.
+
+ *
+ * @property-read SiteTemplateServiceContract $siteTemplateService
  */
 class UpdateProfileRequest extends FormRequest
 {

@@ -1,0 +1,53 @@
+/* Стили комментариев: бандл post-body-code.js (страница show), не app.css. */
+
+.post-comment {
+    scroll-margin-top: 5rem;
+}
+
+[data-comment-roots] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+[data-comment-roots] > [data-comment-thread] {
+    margin-left: 0;
+    margin-top: 0;
+}
+
+.post-comment-thread {
+    display: flow-root;
+}
+
+.post-comment-thread__branch {
+    background-color: var(--bs-body-bg);
+}
+
+.post-comment-thread__replies:not(.d-none) {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.post-comment--indented {
+    margin-left: 2.75rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--bs-border-color);
+}
+
+.post-comment-thread__replies:not(.d-none) > .post-comment,
+.post-comment-thread__replies:not(.d-none) .post-comment--indented {
+    margin-left: 2.75rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--bs-border-color);
+}
+
+.post-comment__reply-to {
+    font-size: 0.8125rem;
+}
+
+.post-comment__actions {
+    gap: 0.5rem;
+}
+
+.comment-skeleton-batch .post-comment--skeleton {
+    opacity: 0.65;
+}

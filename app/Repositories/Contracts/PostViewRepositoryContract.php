@@ -28,11 +28,13 @@ interface PostViewRepositoryContract
     public function getCount(int $postId): int;
 
     /**
-     * flush pending counts.
+     * Счётчики просмотров для списка постов.
+     *
+     * @param  Collection<int, int>  $postIds
+     * @return Collection<int, int>
      */
-    /**
-     * flush pending counts.
-     */
+    public function getCountsForPosts(Collection $postIds): Collection;
+
     /**
      * Сбрасывает отложенные счётчики просмотров.
      *

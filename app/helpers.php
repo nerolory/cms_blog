@@ -20,3 +20,15 @@ if (! function_exists('csp_nonce')) {
         return is_string($nonce) ? $nonce : '';
     }
 }
+
+if (! function_exists('csp_nonce_attribute')) {
+    /**
+     * HTML-атрибут nonce для inline script/style (пустая строка, если CSP выключен).
+     */
+    function csp_nonce_attribute(): string
+    {
+        $nonce = csp_nonce();
+
+        return $nonce !== '' ? 'nonce="'.e($nonce).'"' : '';
+    }
+}

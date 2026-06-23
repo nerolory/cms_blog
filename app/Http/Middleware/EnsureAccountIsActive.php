@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\AccountStatus;
 use App\Services\Contracts\MailSettingsServiceContract;
+use App\Support\Http\EngagementSpaRequest;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,14 +37,15 @@ class EnsureAccountIsActive
             return $next($request);
         }
         if ($status === AccountStatus::Suspended) {
-            return $request->expectsJson() ? abort(403, __('auth.account.suspended')) : abort(403,
+            return EngagementSpaRequest::matches($request) ? abort(403, __('auth.account.suspended')) : abort(403,
                 __('auth.account.suspended'));
         }
         if ($this->mailSettingsService->isEmailVerificationRequired() && ! $user->hasVerifiedEmail()) {
-            return $request->expectsJson() ? abort(403,
+            return EngagementSpaRequest::matches($request) ? abort(403,
                 __('auth.verification.required')) : redirect()->route('verification.notice');
         }
 
-        return $request->expectsJson() ? abort(403, __('auth.pending.required')) : redirect()->route('account.pending');
+        return EngagementSpaRequest::matches($request) ? abort(403,
+            __('auth.pending.required')) : redirect()->route('account.pending');
     }
 }

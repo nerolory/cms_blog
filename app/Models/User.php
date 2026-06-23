@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\AccountStatus;
+use App\Presenters\UserPresenterFactory;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -38,9 +40,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Post> $posts
  * @property-read UserTokenWallet|null $tokenWallet
  */
-#[Fillable(['name', 'email', 'password', 'theme', 'locale', 'avatar_path'])]
+#[Fillable(['name', 'email', 'password', 'theme', 'locale', 'avatar_path', 'email_verified_at', 'account_status'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, MustVerifyEmailTrait, Notifiable;
@@ -137,5 +139,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
         return $this->hasAnyRole(['moderator', 'admin',
             'owner']) || $this->can('panel.access.moderator') || $this->can('panel.access.admin');
+    }
+
+    /**
+     * URL аватара в Filament (локальный storage, без ui-avatars.com).
+
+     *
+     * @return ?string
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return app(UserPresenterFactory::class)->for($this)->avatarUrl();
     }
 }

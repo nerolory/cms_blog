@@ -16,8 +16,10 @@ use App\Repositories\TokenPackageRepository;
 use App\Repositories\UserTokenWalletRepository;
 use App\Services\AiAnalysisOrderService;
 use App\Services\AiInsightService;
+use App\Services\AiSettingsService;
 use App\Services\Contracts\AiAnalysisOrderServiceContract;
 use App\Services\Contracts\AiInsightServiceContract;
+use App\Services\Contracts\AiSettingsServiceContract;
 use App\Services\Contracts\PaymentGatewayContract;
 use App\Services\Contracts\PaymentWebhookServiceContract;
 use App\Services\Contracts\TokenWalletServiceContract;
@@ -39,8 +41,9 @@ class AiServiceProvider extends ServiceProvider
     {
         $this->app->bind(AiToolResultRepositoryContract::class, AiToolResultRepository::class);
         $this->app->bind(AiSettingsRepositoryContract::class, AiSettingsRepository::class);
+        $this->app->singleton(AiSettingsServiceContract::class, AiSettingsService::class);
         $this->app->bind(AiAnalysisOrderRepositoryContract::class, AiAnalysisOrderRepository::class);
-        $this->app->bind(UserTokenWalletRepositoryContract::class, UserTokenWalletRepository::class);
+        $this->app->singleton(UserTokenWalletRepositoryContract::class, UserTokenWalletRepository::class);
         $this->app->bind(TokenPackageRepositoryContract::class, TokenPackageRepository::class);
         $this->app->bind(PaymentIntentRepositoryContract::class, PaymentIntentRepository::class);
         $this->app->bind(AiInsightServiceContract::class, AiInsightService::class);

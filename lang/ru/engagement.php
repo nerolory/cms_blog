@@ -16,6 +16,10 @@ return [
         'reply_placeholder' => 'Ответ…',
         'submit' => 'Отправить',
         'reply' => 'Ответить',
+        'reply_to' => 'в ответ @:name',
+        'show_replies' => 'Показать ответы (:count)',
+        'load_more' => 'Загрузить ещё комментарии',
+        'load_more_replies' => 'Показать ещё ответы',
         'empty' => 'Комментариев пока нет.',
         'login_required' => 'Войдите, чтобы оставить комментарий.',
         'messages' => [

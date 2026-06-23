@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'env' => env('APP_ENV', 'production'),
+    'env' => env('APP_ENV', 'local'),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,5 +122,17 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Schema inspector (Schema::hasTable on hot path)
+    |--------------------------------------------------------------------------
+    |
+    | В production/local выключено: таблицы гарантированы миграциями.
+    | Включить только при отладке частично развёрнутой БД.
+    |
+    */
+
+    'schema_inspector' => (bool) env('APP_SCHEMA_INSPECTOR', false),
 
 ];

@@ -25,7 +25,13 @@ class RoleProvisioner
      */
     public function defaultUserPermissions(): Collection
     {
-        return collect(['posts.create', 'posts.update.own', 'posts.delete.own']);
+        return collect([
+            'posts.create',
+            'posts.update.own',
+            'posts.delete.own',
+            'ai.orders.request',
+            'tokens.purchase',
+        ]);
     }
 
     /**

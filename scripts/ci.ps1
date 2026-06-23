@@ -13,9 +13,9 @@ function Invoke-Step {
     }
 }
 
-Invoke-Step "PHP (Docker)" { docker compose exec -T php composer check:php }
-Invoke-Step "Python (ai-service)" { Push-Location ai-service; pip install -e ".[dev]" -q; ruff check .; pytest; Pop-Location }
 Invoke-Step "Frontend check (host)" { npm run check:frontend }
 Invoke-Step "Frontend build (host)" { npm run build }
+Invoke-Step "PHP (Docker)" { docker compose exec -T php composer check:php }
+Invoke-Step "Python (ai-service)" { Push-Location ai-service; pip install -e ".[dev]" -q; ruff check .; pytest; Pop-Location }
 
 Write-Host "==> CI passed" -ForegroundColor Green

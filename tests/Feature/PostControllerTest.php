@@ -2,11 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\DTO\PostListEngagementItem;
+use App\Enums\CommentStatus;
 use App\Enums\PostStatus;
+use App\Enums\ReactionType;
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\PostComment;
+use App\Models\PostReaction;
 use App\Models\User;
+use App\Support\TypeCast;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Tests\Concerns\RefreshDatabase;
 use Tests\Concerns\SeedsRoles;
 use Tests\TestCase;
@@ -30,6 +39,11 @@ class PostControllerTest extends TestCase
         parent::setUp();
         $this->seedRoles();
         Cache::flush();
+        try {
+            Redis::del('post_reactions:totals', 'post_reactions:totals:v2', 'post_views', 'post_views:totals');
+        } catch (\Throwable) {
+            // Redis может быть недоступен в unit-окружении.
+        }
     }
 
     /**
@@ -40,7 +54,74 @@ class PostControllerTest extends TestCase
         $user = User::factory()->create();
         Post::factory()->count(3)->for($user)->published()->create();
         $response = $this->get(route('posts.index'));
-        $response->assertOk()->assertViewIs('pages.posts.index')->assertViewHas('posts');
+        $response->assertOk()->assertViewIs('pages.posts.index')->assertViewHas('posts')
+            ->assertViewHas('listingEngagement');
+    }
+
+    /**
+     * Index: просмотры и ненулевые реакции.
+     */
+    public function test_index_displays_views_and_non_zero_reactions(): void
+    {
+        $author = User::factory()->create();
+        $post = Post::factory()->for($author)->published()->create();
+        try {
+            Redis::hdel('post_views', (string) $post->id);
+            Redis::hdel('post_views:totals', (string) $post->id);
+        } catch (\Throwable) {
+            // Redis может быть недоступен в тестах.
+        }
+        $post->forceFill(['views_count' => 42])->save();
+        PostReaction::query()->create([
+            'post_id' => $post->id,
+            'user_id' => $author->id,
+            'type' => ReactionType::Like,
+        ]);
+
+        $response = $this->get(route('posts.index'));
+        $response->assertOk();
+        $response->assertViewHas('posts', fn ($posts) => $posts->contains('id', $post->id));
+        /** @var Collection<int, PostListEngagementItem> $listingEngagement */
+        $listingEngagement = $response->viewData('listingEngagement');
+        $item = $listingEngagement->get($post->id);
+        $this->assertNotNull($item);
+        $this->assertSame(42, $item->viewsCount);
+        $this->assertSame(1, $item->reactionCounts->get(ReactionType::Like->value));
+        $this->assertFalse($item->reactionCounts->has(ReactionType::Love->value));
+        $response->assertSee('post-card__views', false);
+        $response->assertSee('42', false);
+        $response->assertSee(__('engagement.views', ['count' => number_format(42)]), false);
+        $response->assertSee($post->title, false);
+        $response->assertSee(ReactionType::Like->emoji(), false);
+        $response->assertDontSee(ReactionType::Love->emoji(), false);
+    }
+
+    /**
+     * Просмотры сохраняются в БД сразу и не сбрасываются при
+     * очистке Redis.
+     */
+    public function test_view_count_survives_redis_reset(): void
+    {
+        $author = User::factory()->create();
+        $post = Post::factory()->for($author)->published()->create(['views_count' => 0]);
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->get(route('posts.show', $post))->assertOk();
+        }
+        $post->refresh();
+        $this->assertSame(3, $post->views_count);
+
+        try {
+            Redis::del('post_views', 'post_views:totals');
+        } catch (\Throwable) {
+            $this->markTestSkipped('Redis unavailable.');
+        }
+
+        $response = $this->get(route('posts.index'));
+        $response->assertOk();
+        /** @var Collection<int, PostListEngagementItem> $listingEngagement */
+        $listingEngagement = $response->viewData('listingEngagement');
+        $this->assertSame(3, $listingEngagement->get($post->id)?->viewsCount);
     }
 
     /**
@@ -71,6 +152,46 @@ class PostControllerTest extends TestCase
         $post = Post::factory()->for($user)->published()->create();
         $response = $this->get(route('posts.show', $post));
         $response->assertOk()->assertViewIs('pages.posts.show')->assertViewHas('post');
+        $response->assertSee('data-post-engagement-app', false);
+    }
+
+    /**
+     * Show с комментариями отдаёт разметку веток comment-thread.
+     */
+    public function test_show_renders_comment_thread_branch_markup(): void
+    {
+        $user = $this->createAuthorUser();
+        $post = Post::factory()->for($user)->published()->create();
+        $this->actingAs($user)->post(route('posts.comments.store', $post), ['body' => 'Root one'])->assertRedirect();
+        $this->actingAs($user)->post(route('posts.comments.store', $post), ['body' => 'Root two'])->assertRedirect();
+
+        $response = $this->get(route('posts.show', $post));
+        $response->assertOk();
+        $response->assertSee('post-comment-thread__branch', false);
+        $this->assertGreaterThanOrEqual(2, substr_count((string) $response->getContent(),
+            'post-comment-thread__branch'));
+    }
+
+    /**
+     * Sentinel подгрузки ответов должен быть внутри [data-comment-replies] для
+     * insertBefore.
+     */
+    public function test_show_places_replies_sentinel_inside_replies_container(): void
+    {
+        $user = $this->createAuthorUser();
+        $post = Post::factory()->for($user)->published()->create();
+        $this->actingAs($user)->post(route('posts.comments.store', $post), ['body' => 'Root'])->assertRedirect();
+        $rootId = TypeCast::int(PostComment::query()->where('post_id', $post->id)->value('id'));
+        $this->actingAs($user)->post(route('posts.comments.store', $post), [
+            'body' => 'Reply',
+            'parent_id' => $rootId,
+        ])->assertRedirect();
+
+        $html = (string) $this->get(route('posts.show', $post))->getContent();
+        $this->assertMatchesRegularExpression(
+            '/data-comment-replies[^>]*>[\s\S]*data-comment-replies-sentinel/',
+            $html,
+        );
     }
 
     /**
@@ -318,5 +439,70 @@ class PostControllerTest extends TestCase
         $post = Post::factory()->for($user)->published()->create();
         $this->get(route('posts.show', $post))->assertOk()->assertDontSee(route('posts.edit', $post, absolute: false),
             false)->assertDontSee(__('posts.web.open_in_admin'));
+    }
+
+    /**
+     * Тёплый кэш: гостевой листинг постов не раздувает SQL.
+     */
+    public function test_index_warm_cache_minimal_sql_for_guest(): void
+    {
+        $user = User::factory()->create();
+        Post::factory()->count(3)->for($user)->published()->create();
+        $this->get(route('posts.index'))->assertOk();
+        $queryCount = 0;
+        DB::listen(static function () use (&$queryCount): void {
+            $queryCount++;
+        });
+        $this->get(route('posts.index'))->assertOk();
+        $this->assertLessThanOrEqual(3, $queryCount);
+    }
+
+    /**
+     * Тёплый кэш: авторизованный листинг постов в пределах
+     * лимита SQL.
+     */
+    public function test_index_warm_cache_minimal_sql_for_authenticated_user(): void
+    {
+        $user = User::factory()->create();
+        Post::factory()->count(3)->for($user)->published()->create();
+        $this->actingAs($user)->get(route('posts.index'))->assertOk();
+        $this->actingAs($user)->get(route('posts.index'))->assertOk();
+        $queryCount = 0;
+        DB::listen(static function () use (&$queryCount): void {
+            $queryCount++;
+        });
+        $this->actingAs($user)->get(route('posts.index'))->assertOk();
+        $this->assertLessThanOrEqual(5, $queryCount);
+    }
+
+    /**
+     * Тёплый кэш: детальная страница поста в пределах лимита SQL.
+     */
+    public function test_show_warm_cache_minimal_sql_for_authenticated_user(): void
+    {
+        $this->seedRoles();
+        $author = $this->createAuthorUser(['email' => 'show-sql-author@example.com']);
+        $post = Post::factory()->for($author)->published()->create();
+        $root = PostComment::query()->create([
+            'post_id' => $post->id,
+            'user_id' => $author->id,
+            'body' => 'Первый комментарий',
+            'status' => CommentStatus::Visible,
+        ]);
+        PostComment::query()->create([
+            'post_id' => $post->id,
+            'user_id' => $author->id,
+            'parent_id' => $root->id,
+            'body' => 'Ответ в ветке',
+            'status' => CommentStatus::Visible,
+        ]);
+
+        $this->actingAs($author)->get(route('posts.show', $post))->assertOk();
+        $queryCount = 0;
+        DB::listen(static function () use (&$queryCount): void {
+            $queryCount++;
+        });
+        $this->actingAs($author)->get(route('posts.show', $post))->assertOk();
+        $this->assertLessThanOrEqual(5, $queryCount);
     }
 }

@@ -27,6 +27,14 @@ interface SiteOperationalServiceContract
     public function isCriticalOperational(): bool;
 
     /**
+     * Возвращает закэшированный флаг criticalOk без probe (null — кэш пуст).
+
+     *
+     * @return ?bool
+     */
+    public function getCachedCriticalOk(): ?bool;
+
+    /**
      * Проверяет возможность bypass maintenance.
      *
      * @param  Request  $request  HTTP-запрос

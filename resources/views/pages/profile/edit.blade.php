@@ -19,7 +19,7 @@
                     <form id="profile-form" method="POST" action="{{ route('profile.update') }}"
                         data-save-disabled-hint="{{ __('profile.messages.save_disabled_hint') }}"
                         data-initial-name="{{ $user->name }}" data-initial-email="{{ $user->email }}"
-                        data-initial-theme="{{ $user->theme }}">
+                        data-initial-theme="{{ $user->theme ?? 'default' }}">
                         @csrf
                         @method('PATCH')
 
